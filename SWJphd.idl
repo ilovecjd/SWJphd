@@ -1,0 +1,29 @@
+﻿// SWJphd.idl: SWJphd.exe의 형식 라이브러리 소스
+
+// 이 파일은 MIDL 컴파일러에 의해 처리되어
+// 형식 라이브러리(SWJphd.tlb)입니다.
+
+[ uuid(da3f9ff9-59c7-4b32-af51-b532c03ed75f), version(1.0) ]
+library SWJphd
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  CSWJphdDoc의 기본 디스패치 인터페이스
+
+	[ uuid(c422e8a3-6872-4cc0-aecc-d4af0571f0a8) ]
+	dispinterface ISWJphd
+	{
+		properties:
+
+		methods:
+	};
+
+	//  CSWJphdDoc에 대한 클래스 정보
+
+	[ uuid(e9c9df8b-8966-4de4-ae41-a2b2ad5c0b55) ]
+	coclass SWJphd
+	{
+		[default] dispinterface ISWJphd;
+	};
+};
