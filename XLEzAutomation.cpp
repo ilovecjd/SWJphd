@@ -5,7 +5,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "pch.h"
 //#include "XLAutomationTester.h"
 #include "XLEzAutomation.h"
 

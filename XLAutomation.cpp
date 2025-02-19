@@ -3,7 +3,7 @@
 //Microsoft Excel97 Developer Kit, Microsoft Press 1997 
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "pch.h"
 //#include "XLAutomationTester.h"
 #include "XLAutomation.h"
 #include <ole2ver.h>
@@ -93,7 +93,7 @@ BOOL CXLAutomation::InitOLE()
 	// check the OLE library version
 	if (rmm != HIWORD(dwOleVer)) 
 	{
-		MessageBox(NULL, _T("Incorrect version of OLE libraries."), "Failed", MB_OK | MB_ICONSTOP);
+		MessageBox(NULL, _T("Incorrect version of OLE libraries."), _T("Failed"), MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
 	
@@ -103,7 +103,7 @@ BOOL CXLAutomation::InitOLE()
 	// initialize OLE, fail application if we can't get OLE to init.
 	if (FAILED(OleInitialize(NULL))) 
 	{
-		MessageBox(NULL, _T("Cannot initialize OLE."), "Failed", MB_OK | MB_ICONSTOP);
+		MessageBox(NULL, _T("Cannot initialize OLE."), _T("Failed"), MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
 	
@@ -127,14 +127,14 @@ BOOL CXLAutomation::StartExcel()
 	 */
 	if (FAILED(CLSIDFromProgID(L"Excel.Application", &clsExcelApp))) 
 	{
-		MessageBox(NULL, _T("Cannot obtain CLSID from ProgID"), "Failed", MB_OK | MB_ICONSTOP);
+		MessageBox(NULL, _T("Cannot obtain CLSID from ProgID"), _T("Failed"), MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
 
 	// start a new copy of Excel, grab the IDispatch interface
 	if (FAILED(CoCreateInstance(clsExcelApp, NULL, CLSCTX_LOCAL_SERVER, IID_IDispatch, (void**)&m_pdispExcelApp))) 
 	{
-		MessageBox(NULL, _T("Cannot start an instance of Excel for Automation."), "Failed", MB_OK | MB_ICONSTOP);
+		MessageBox(NULL, _T("Cannot start an instance of Excel for Automation."), _T("Failed"), MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
 
@@ -322,7 +322,7 @@ void CXLAutomation::ReleaseVariant(VARIANTARG *pvarg)
 		}
 		else 
 		{
-			MessageBox(NULL, _T("ReleaseVariant: Array contains non-variant type"), "Failed", MB_OK | MB_ICONSTOP);
+			MessageBox(NULL, _T("ReleaseVariant: Array contains non-variant type"), _T("Failed"), MB_OK | MB_ICONSTOP);
 		}
 		
 		// Free the array itself.
@@ -349,7 +349,7 @@ void CXLAutomation::ReleaseVariant(VARIANTARG *pvarg)
 				break;
 				
 			default:
-				MessageBox(NULL, _T("ReleaseVariant: Unknown type"), "Failed", MB_OK | MB_ICONSTOP);
+				MessageBox(NULL, _T("ReleaseVariant: Unknown type"), _T("Failed"), MB_OK | MB_ICONSTOP);
 				break;
 		}
 	}
@@ -863,56 +863,56 @@ void CXLAutomation::ShowException(LPOLESTR szMember, HRESULT hr, EXCEPINFO *pexc
 	switch (GetScode(hr)) 
 	{
 		case DISP_E_UNKNOWNNAME:
-			wsprintf(szBuf, "%s: Unknown name or named argument.", szMember);
+			wsprintf(szBuf, TEXT("%s: Unknown name or named argument."), szMember);
 			break;
 	
 		case DISP_E_BADPARAMCOUNT:
-			wsprintf(szBuf, "%s: Incorrect number of arguments.", szMember);
+			wsprintf(szBuf, TEXT("%s: Incorrect number of arguments."), szMember);
 			break;
 			
 		case DISP_E_EXCEPTION:
-			wsprintf(szBuf, "%s: Error %d: ", szMember, pexcep->wCode);
+			wsprintf(szBuf, TEXT("%s: Error %d: "), szMember, pexcep->wCode);
 			if (pexcep->bstrDescription != NULL)
-				lstrcat(szBuf, (char*)pexcep->bstrDescription);
+				lstrcat(szBuf, (LPCWSTR)pexcep->bstrDescription);
 			else
-				lstrcat(szBuf, "<<No Description>>");
+				lstrcat(szBuf, TEXT("<<No Description>>"));
 			break;
 			
 		case DISP_E_MEMBERNOTFOUND:
-			wsprintf(szBuf, "%s: method or property not found.", szMember);
+			wsprintf(szBuf, TEXT("%s: method or property not found."), szMember);
 			break;
 		
 		case DISP_E_OVERFLOW:
-			wsprintf(szBuf, "%s: Overflow while coercing argument values.", szMember);
+			wsprintf(szBuf, TEXT("%s: Overflow while coercing argument values."), szMember);
 			break;
 		
 		case DISP_E_NONAMEDARGS:
-			wsprintf(szBuf, "%s: Object implementation does not support named arguments.",
+			wsprintf(szBuf, TEXT("%s: Object implementation does not support named arguments."),
 						szMember);
 		    break;
 		    
 		case DISP_E_UNKNOWNLCID:
-			wsprintf(szBuf, "%s: The locale ID is unknown.", szMember);
+			wsprintf(szBuf, TEXT("%s: The locale ID is unknown."), szMember);
 			break;
 		
 		case DISP_E_PARAMNOTOPTIONAL:
-			wsprintf(szBuf, "%s: Missing a required parameter.", szMember);
+			wsprintf(szBuf, TEXT("%s: Missing a required parameter."), szMember);
 			break;
 		
 		case DISP_E_PARAMNOTFOUND:
-			wsprintf(szBuf, "%s: Argument not found, argument %d.", szMember, uiArgErr);
+			wsprintf(szBuf, TEXT("%s: Argument not found, argument %d."), szMember, uiArgErr);
 			break;
 			
 		case DISP_E_TYPEMISMATCH:
-			wsprintf(szBuf, "%s: Type mismatch, argument %d.", szMember, uiArgErr);
+			wsprintf(szBuf, TEXT("%s: Type mismatch, argument %d."), szMember, uiArgErr);
 			break;
 
 		default:
-			wsprintf(szBuf, "%s: Unknown error occured.", szMember);
+			wsprintf(szBuf, TEXT("%s: Unknown error occured."), szMember);
 			break;
 	}
 	
-	MessageBox(NULL, szBuf, "OLE Error", MB_OK | MB_ICONSTOP);
+	MessageBox(NULL, szBuf, TEXT("OLE Error"), MB_OK | MB_ICONSTOP);
 
 }
 //Delete entire line from the current worksheet
@@ -990,25 +990,25 @@ CString CXLAutomation::GetCellValueCString(int nColumn, int nRow)
 				{
 					unsigned char nChr = vargValue.bVal;
 					//szValue = nChr;
-					szValue.Format("%d",nChr);// = nChr;
+					szValue.Format(_T("%d"),nChr);// = nChr;
 				}
 				break;
 			case VT_I4:
 				{
 					long nVal = vargValue.lVal;
-					szValue.Format("%i", nVal);
+					szValue.Format(_T("%i"), nVal);
 				}
 				break;
 			case VT_R4:
 				{
 					float fVal = vargValue.fltVal;
-					szValue.Format("%f", fVal);
+					szValue.Format(_T("%f"), fVal);
 				}
 				break;
 			case VT_R8:
 				{
 					double dVal = vargValue.dblVal;
-					szValue.Format("%f", dVal);
+					szValue.Format(_T("%f"), dVal);
 				}
 				break;
 			case VT_BSTR:
@@ -1022,7 +1022,7 @@ CString CXLAutomation::GetCellValueCString(int nColumn, int nRow)
 					//Not tested
 					unsigned char* pChr = vargValue.pbVal;
 //					szValue = *pChr;
-					szValue.Format("%f", *pChr);
+					szValue.Format(_T("%f"), *pChr);
 				}
 				break;
 			case VT_BYREF|VT_BSTR:
