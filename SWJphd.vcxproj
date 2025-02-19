@@ -203,7 +203,6 @@
     <ClInclude Include="SWJphdDlg.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="XLAutomation.h" />
-    <ClInclude Include="XLEzAutomation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DlgProxy.cpp" />
@@ -216,7 +215,6 @@
     <ClCompile Include="SWJphd.cpp" />
     <ClCompile Include="SWJphdDlg.cpp" />
     <ClCompile Include="XLAutomation.cpp" />
-    <ClCompile Include="XLEzAutomation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="SWJphd.idl" />

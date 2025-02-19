@@ -25,9 +25,6 @@ public:
 	BOOL DeleteRow(int nRow);
 	BOOL ReleaseExcel();
 	BOOL SetCellValue(int nColumn, int nRow, CString szValue);
-	BOOL ExportCString(CString szDataCollection);
-	BOOL UpdateXYChart(int nYColumn);
-	BOOL CreateXYChart(int nYColumn);
 	CXLEzAutomation();
 	CXLEzAutomation(BOOL bVisible);
 	virtual ~CXLEzAutomation();

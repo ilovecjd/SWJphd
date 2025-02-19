@@ -9,6 +9,16 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+enum SheetName {
+	WS_NUM_PARAMETERS = 0,
+	WS_NUM_DASHBOARD,
+	WS_NUM_PROJECT,
+	WS_NUM_ACTIVITY_STRUCT,
+	WS_NUM_DEBUG_INFO,
+	WS_NUM_SHEET_COUNT // Total number of sheets
+};
+LPOLESTR gSheetNames[WS_NUM_SHEET_COUNT] = { L"parameters", L"dashboard", L"project", L"activity_struct", L"debuginfo" };
+
 
 class CXLAutomation  
 {
@@ -31,19 +41,14 @@ class CXLAutomation
 
 public:
 	BOOL OpenExcelFile(CString szFileName);
-	BOOL InsertPictureToWorksheet(BYTE* pImage, int Column, int Row, double dPicWidth, double dPicHeight);
-	BOOL PlaceImageToClipboard(BYTE* pImage);
-	BOOL InsertPictureToWorksheet(CString szFileName, int Column, int Row, double dPicWidth, double dPicHeight);
-	CString GetCellValueCString(int nColumn, int nRow);
+	BOOL OpenExcelFile(CString szFileName, CString strSheetName);
+	CString GetCellValueCString(SheetName sheet, int nColumn, int nRow);
 	BOOL SaveAs(CString szFileName, int nFileFormat, CString szPassword, CString szWritePassword, BOOL bReadOnly, BOOL bBackUp);
-	BOOL DeleteRow(long nRow);
-	BOOL ReleaseExcel();
-	BOOL PasteStringToWorksheet(CString pDataBuffer);
-	BOOL UpdatePlotRange(int nYColumn);
+	BOOL DeleteRow(SheetName sheet, long nRow);
+	BOOL ReleaseExcel();	
 	BOOL AddArgumentCStringArray(LPOLESTR lpszArgName,WORD wFlags, LPOLESTR *paszStrings, int iCount);
-	BOOL SetRangeValueDouble(LPOLESTR lpszRef, double d);
-	BOOL CreateXYChart(int nYColumn);
-	BOOL SetCellsValueToString(double Column, double Row, CString szStr);
+	BOOL SetRangeValueDouble(SheetName sheet, LPOLESTR lpszRef, double d);
+	BOOL SetCellsValueToString(SheetName sheet, double Column, double Row, CString szStr);
 	BOOL AddArgumentOLEString(LPOLESTR lpszArgName, WORD wFlags, LPOLESTR lpsz);
 	BOOL AddArgumentCString(LPOLESTR lpszArgName, WORD wFlags, CString szStr);
 	BOOL CreateWorkSheet();
@@ -57,6 +62,8 @@ public:
 	CXLAutomation::CXLAutomation(BOOL bVisible);
 	virtual ~CXLAutomation();
 	BOOL SetExcelVisible(BOOL bVisible);
+
+	BOOL AddNewSheet(CString sheetName);
 
 protected:
 	void ShowException(LPOLESTR szMember, HRESULT hr, EXCEPINFO *pexcep, unsigned int uiArgErr);
@@ -72,15 +79,14 @@ protected:
 	LPOLESTR	m_alpszArgNames[MAX_DISP_ARGS + 1];	// used to hold the argnames for GetIDs
 	WORD		m_awFlags[MAX_DISP_ARGS];
 
-
-
 	BOOL ExlInvoke(IDispatch *pdisp, LPOLESTR szMember, VARIANTARG * pvargReturn,
 			WORD wInvokeAction, WORD wFlags);
 	IDispatch* m_pdispExcelApp;
-	IDispatch *m_pdispWorkbook;
-	IDispatch *m_pdispWorksheet;
-	IDispatch *m_pdispActiveChart;
+	IDispatch *m_pdispWorkbook;	
+	IDispatch* m_pdispWorksheets[WS_NUM_SHEET_COUNT]; // Array to store worksheet dispatch interfaces
+
 	BOOL StartExcel();
+	BOOL FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetName, IDispatch** ppSheet);
 };
 
 #endif // !defined(AFX_XLAUTOMATION_H__E020CE95_7428_4BEF_A24C_48CE9323C450__INCLUDED_)

@@ -42,25 +42,6 @@ CXLEzAutomation::~CXLEzAutomation()
 		delete m_pXLServer;
 }
 
-
-//Create XY plot of the type xlXYScatterLinesNoMarkers
-BOOL CXLEzAutomation::CreateXYChart(int nYColumn)
-{
-	return m_pXLServer->CreateXYChart(nYColumn);
-}
-//Force update data source range . If new data points have been added to
-//the data source, these points will be added to the plot.
-//Default assumes data are placed in A and B columns of the Excel worksheet.
-BOOL CXLEzAutomation::UpdateXYChart(int nYColumn)
-{
-	return m_pXLServer->UpdatePlotRange(nYColumn);
-}
-//Use clipboard to export szDataCollection to Excel worksheet
-BOOL CXLEzAutomation::ExportCString(CString szDataCollection)
-{
-	return m_pXLServer->PasteStringToWorksheet(szDataCollection);
-
-}
 //Set cell value: Worksheet.Cells(nColumn, nRow).Value = szValue
 BOOL CXLEzAutomation::SetCellValue(int nColumn, int nRow, CString szValue)
 {

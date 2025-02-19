@@ -54,27 +54,22 @@ static char THIS_FILE[]=__FILE__;
 CXLAutomation::CXLAutomation()
 {
 	m_pdispExcelApp = NULL;
-	m_pdispWorkbook = NULL;
-	m_pdispWorksheet = NULL;
-	m_pdispActiveChart = NULL;
+	m_pdispWorkbook = NULL;	
+	
 	InitOLE();
 	StartExcel();
-	SetExcelVisible(TRUE);
-	CreateWorkSheet();
-	//CreateXYChart();
+	SetExcelVisible(TRUE);	
 }
 
 CXLAutomation::CXLAutomation(BOOL bVisible)
 {
 	m_pdispExcelApp = NULL;
 	m_pdispWorkbook = NULL;
-	m_pdispWorksheet = NULL;
-	m_pdispActiveChart = NULL;
+	
 	InitOLE();
 	StartExcel();
 	SetExcelVisible(bVisible);
-	CreateWorkSheet();
-	//CreateXYChart();
+	
 }
 
 CXLAutomation::~CXLAutomation()
@@ -106,7 +101,6 @@ BOOL CXLAutomation::InitOLE()
 		MessageBox(NULL, _T("Cannot initialize OLE."), _T("Failed"), MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
-	
 		
 	return TRUE;
 
@@ -460,58 +454,6 @@ BOOL CXLAutomation::ReleaseExcel()
 
 }
 
-//Create an empty workshet
-BOOL CXLAutomation::CreateWorkSheet()
-{
-	if(NULL == m_pdispExcelApp)
-		return FALSE;
-
-	BOOL fResult;
-	VARIANTARG varg1, varg2;
-	IDispatch *pdispRange = NULL;
-	IDispatch *pdispActiveSheet = NULL;
-	IDispatch *pdispActiveCell = NULL;
-	IDispatch *pdispCrt = NULL;
-	
-
-	
-	// Set wb = [application].Workbooks.Add(template := xlWorksheet)
-	ClearAllArgs();
-	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
-		return FALSE;
-	
-	
-	ClearAllArgs();
-	AddArgumentInt2(L"Template", 0, xlWorksheet);
-	fResult = ExlInvoke(varg1.pdispVal, L"Add", &varg2, DISPATCH_METHOD, 0);
-	ReleaseVariant(&varg1);
-	if (!fResult)
-		return FALSE;
-	m_pdispWorkbook = varg2.pdispVal;
-	
-	// Set ws = wb.Worksheets(1)
-	ClearAllArgs();
-	AddArgumentInt2(NULL, 0, 1);
-	if (!ExlInvoke(m_pdispWorkbook, L"Worksheets", &varg2, DISPATCH_PROPERTYGET, 0))
-		goto CreateWsBail;
-	m_pdispWorksheet = varg2.pdispVal;
-
-	fResult = TRUE;
-
-CreateWsExit:
-	
-	if (pdispRange != NULL)
-		pdispRange->Release();
-	if (pdispCrt != NULL)
-		pdispCrt->Release();
-	return fResult;
-	
-CreateWsBail:
-	fResult = FALSE;
-	goto CreateWsExit;
-
-}
-
 /*
  *  OLE and IDispatch use a BSTR as the representation of strings.
  *  This constructor automatically copies the passed-in C-style string
@@ -547,9 +489,9 @@ BOOL CXLAutomation::AddArgumentCString(LPOLESTR lpszArgName, WORD wFlags, CStrin
 }
 
 //Perform Worksheets.Cells(x,y).Value = szStr
-BOOL CXLAutomation::SetCellsValueToString(double Column, double Row, CString szStr)
+BOOL CXLAutomation::SetCellsValueToString(SheetName sheet, double Column, double Row, CString szStr)
 {
-	if(NULL == m_pdispWorksheet)
+	if(NULL == m_pdispWorksheets[sheet])
 		return FALSE;
 	if(szStr.IsEmpty())
 		return FALSE;
@@ -561,7 +503,7 @@ BOOL CXLAutomation::SetCellsValueToString(double Column, double Row, CString szS
 	ClearAllArgs();
 	AddArgumentDouble(NULL, 0, Column);
 	AddArgumentDouble(NULL, 0, Row);
-	if(!ExlInvoke(m_pdispWorksheet, L"Cells",&vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+	if(!ExlInvoke(m_pdispWorksheets[sheet], L"Cells",&vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
 		return FALSE;
 
     AddArgumentCString(NULL, 0, szStr );
@@ -572,78 +514,10 @@ BOOL CXLAutomation::SetCellsValueToString(double Column, double Row, CString szS
 	
 	return TRUE;
 }
-//Create XY chart. Y values are in column nYColumn.
-BOOL CXLAutomation::CreateXYChart(int nYColumn)
+
+BOOL CXLAutomation::SetRangeValueDouble(SheetName sheet, LPOLESTR lpszRef, double d)
 {
-	if(NULL == m_pdispWorksheet)
-		return FALSE;
-
-	BOOL fResult;
-	VARIANTARG varg1, varg2;
-	IDispatch *pdispRange = NULL;
-	IDispatch *pdispCrt = NULL;
-
-		
-	// set sourceRange = ws.Columns(nYColumn)
-	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, nYColumn);
-	if (!ExlInvoke(m_pdispWorksheet, L"Columns", &varg2, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		goto CreateChartBail;
-	pdispRange = varg2.pdispVal;
-	
-	// set crt = wb.Charts.Add
-	ClearAllArgs();
-	if (!ExlInvoke(m_pdispWorkbook, L"Charts", &varg1, DISPATCH_PROPERTYGET, 0))
-		goto CreateChartBail;
-	ClearAllArgs();
-	fResult = ExlInvoke(varg1.pdispVal, L"Add", &varg2, DISPATCH_METHOD, 0);
-	ReleaseVariant(&varg1);
-	if (!fResult)
-		goto CreateChartBail;
-	pdispCrt = varg2.pdispVal;
-
-	ClearAllArgs();
-	if (!ExlInvoke(m_pdispWorkbook, L"ActiveChart", &varg1, DISPATCH_PROPERTYGET, 0))
-		goto CreateChartBail;
-	m_pdispActiveChart = varg1.pdispVal;
-
-	ClearAllArgs();
-	AddArgumentInt2(NULL, 0, xlXYScatterLinesNoMarkers);
-	if (!ExlInvoke(m_pdispActiveChart, L"ChartType", &varg1, DISPATCH_PROPERTYPUT, 0))
-		goto CreateChartBail;
-
-	//Charts.Add
-    //ActiveChart.ChartType = xlXYScatterLinesNoMarkers
-    //ActiveChart.SetSourceData Source:=Sheets("Sheet1").Range("A:A, B:B"), PlotBy:= _
-    //    xlColumns
-	ClearAllArgs();
-	AddArgumentInt2(L"PlotBy", 0, xlColumns);
-	AddArgumentDispatch(L"Source", 0, pdispRange);	// will auto-free
-	pdispRange = NULL;
-	if (!ExlInvoke(m_pdispActiveChart, L"SetSourceData", NULL, DISPATCH_METHOD, DISP_FREEARGS))
-		goto CreateChartBail;
-
-
-	fResult = TRUE;
-
-CreateChartExit:
-	if (pdispRange != NULL)
-		pdispRange->Release();
-	if (pdispCrt != NULL)
-		pdispCrt->Release();
-	return fResult;
-	
-CreateChartBail:
-	fResult = FALSE;
-	goto CreateChartExit;
-
-	return TRUE;
-
-}
-
-BOOL CXLAutomation::SetRangeValueDouble(LPOLESTR lpszRef, double d)
-{
-	if(NULL == m_pdispWorksheet)
+	if(NULL == m_pdispWorksheets[sheet])
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -651,7 +525,7 @@ BOOL CXLAutomation::SetRangeValueDouble(LPOLESTR lpszRef, double d)
 	
 	ClearAllArgs();
 	AddArgumentOLEString(NULL, 0, lpszRef);
-	if (!ExlInvoke(m_pdispWorksheet, L"Range", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Range", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
 		return FALSE;
 	
 	AddArgumentDouble(NULL, 0, d);
@@ -713,120 +587,7 @@ BOOL CXLAutomation::AddArgumentCStringArray(LPOLESTR lpszArgName, WORD wFlags, L
 	return TRUE;
 
 }
-//May be new points have been added to the plot data source. Update plot range
-BOOL CXLAutomation::UpdatePlotRange(int nYColumn)
-{
-	if((NULL == m_pdispWorksheet) || (NULL == m_pdispWorkbook) || (NULL == m_pdispActiveChart))
-		return FALSE;
 
-	VARIANTARG varg1;
-	IDispatch *pdispRange = NULL;
-	IDispatch *pdispActiveChart = NULL;
-	BOOL bResult = TRUE;
-	
-	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, nYColumn);
-	if (!ExlInvoke(m_pdispWorksheet, L"Columns", &varg1, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	pdispRange = varg1.pdispVal;
-
-   //ActiveChart.SetSourceData Source:=Sheets("Sheet1").Range("A:A, B:B"), PlotBy:= _
-   //    xlColumns
-	ClearAllArgs();
-	AddArgumentInt2(L"PlotBy", 0, xlColumns);
-	AddArgumentDispatch(L"Source", 0, pdispRange);	// will auto-free
-	pdispRange = NULL;
-	if (!ExlInvoke(m_pdispActiveChart, L"SetSourceData", NULL, DISPATCH_METHOD, DISP_FREEARGS))
-		bResult = FALSE;
-
-	ClearAllArgs();
-	if(NULL != pdispRange)
-	{
-		pdispRange->Release();
-		pdispRange = NULL;
-	}
-	
-	return bResult;
-	
-}
-
-//Copy string to clipboard and paste it to worksheet
-BOOL CXLAutomation::PasteStringToWorksheet(CString pDataBuffer)
-{
-	if(NULL == m_pdispWorksheet)
-		return FALSE;
-	if(pDataBuffer.IsEmpty())
-		return FALSE;
-
-	long nBuffSize = pDataBuffer.GetLength(); 
-	//Nothing to copy
-	if(0 == nBuffSize)
-		return FALSE;
-
-	HANDLE hMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, 24);
-  
-	  if (OpenClipboard(NULL) )
-	  {
-		HGLOBAL hClipMem;
-		char* buffer;
-		BOOL bResult = TRUE;
-		
-		EmptyClipboard();
-		hClipMem = GlobalAlloc(GMEM_DDESHARE, nBuffSize);
-		buffer = (char*)GlobalLock(hClipMem);
-		memcpy(buffer, pDataBuffer, nBuffSize);
-		GlobalUnlock(hClipMem);
-		SetClipboardData(CF_TEXT, hClipMem);
-		CloseClipboard();
-		
-		//Paste data from clipboard
-		// set sourceRange = ws.Range("A1")
-		IDispatch* pdispRange = NULL;
-		VARIANTARG varg1, varg2;
-
-		ClearAllArgs();
-		AddArgumentOLEString(NULL, 0, L"A1");
-		if (!ExlInvoke(m_pdispWorksheet, L"Range", &varg2, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-			return FALSE;
-		pdispRange = varg2.pdispVal;
-
-
-		//Force past from clipboard
-		//set as = sourceRange.Select
-		ClearAllArgs();
-		if (!ExlInvoke(pdispRange, L"Select", &varg2, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-			goto Failed;
-
-		// set wb.ActiveSheet.Paste
-		ClearAllArgs();
-		if (!ExlInvoke(m_pdispWorkbook, L"ActiveSheet", &varg1, DISPATCH_PROPERTYGET, 0))
-			goto Failed;
-		ClearAllArgs();
-
-		// set wb.ActiveSheet.Paste
-		ClearAllArgs();
-		if (!ExlInvoke(m_pdispWorkbook, L"ActiveSheet", &varg1, DISPATCH_PROPERTYGET, 0))
-			goto Failed;
-		ClearAllArgs();
-		bResult = ExlInvoke(varg1.pdispVal, L"Paste", &varg2, DISPATCH_METHOD, 0);
-		ReleaseVariant(&varg1);
-	
-		goto Success;
-
-Failed:
-		bResult = FALSE;
-Success:
-		if(NULL != pdispRange)
-		{
-			pdispRange->Release();
-			pdispRange = NULL;
-		}
-
-		return bResult;
-	  }
-	  return FALSE;
-
-}
 //Clean up: release dipatches
 void CXLAutomation::ReleaseDispatch()
 {
@@ -836,22 +597,18 @@ void CXLAutomation::ReleaseDispatch()
 		m_pdispExcelApp = NULL;
 	}
 
-	if(NULL != m_pdispWorksheet)
-	{
-		m_pdispWorksheet->Release();
-		m_pdispWorksheet = NULL;
-	}
-
 	if(NULL != m_pdispWorkbook)
 	{
 		m_pdispWorkbook->Release();
 		m_pdispWorkbook = NULL;
 	}
 
-	if(NULL != m_pdispActiveChart)
-	{
-		m_pdispActiveChart->Release();
-		m_pdispActiveChart = NULL;
+	// Release all worksheet dispatch pointers
+	for (int i = 0; i < WS_NUM_SHEET_COUNT; i++) {
+		if (m_pdispWorksheets[i] != NULL) {
+			m_pdispWorksheets[i]->Release();
+			m_pdispWorksheets[i] = NULL;
+		}
 	}
 
 }
@@ -918,9 +675,9 @@ void CXLAutomation::ShowException(LPOLESTR szMember, HRESULT hr, EXCEPINFO *pexc
 //Delete entire line from the current worksheet
 //Worksheet.Rows(nLine).Select
 //Selection.Delete Shift:=xlUp
-BOOL CXLAutomation::DeleteRow(long nRow)
+BOOL CXLAutomation::DeleteRow(SheetName sheet, long nRow)
 {
-	if(NULL == m_pdispWorksheet)
+	if(NULL == m_pdispWorksheets[sheet])
 		return FALSE;
 
 	VARIANTARG varg1;
@@ -928,7 +685,7 @@ BOOL CXLAutomation::DeleteRow(long nRow)
 	
 	ClearAllArgs();
 	AddArgumentDouble(NULL, 0, nRow);
-	if (!ExlInvoke(m_pdispWorksheet, L"Rows", &varg1, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Rows", &varg1, DISPATCH_PROPERTYGET, DISP_FREEARGS))
 		return FALSE;
 
 	ClearAllArgs();
@@ -966,10 +723,10 @@ BOOL CXLAutomation::SaveAs(CString szFileName, int nFileFormat, CString szPasswo
 
 //Get Worksheet.Calls(nColumn, nRow).Value
 //This method is not fully tested - see code coments 
-CString CXLAutomation::GetCellValueCString(int nColumn, int nRow)
+CString CXLAutomation::GetCellValueCString(SheetName sheet, int nColumn, int nRow)
 {
 	CString szValue =_T("");
-	if(NULL == m_pdispWorksheet)
+	if(NULL == m_pdispWorksheets[sheet])
 		return szValue;
 	
 	VARIANTARG vargRng, vargValue;
@@ -977,7 +734,7 @@ CString CXLAutomation::GetCellValueCString(int nColumn, int nRow)
 	ClearAllArgs();
 	AddArgumentDouble(NULL, 0, nColumn);
 	AddArgumentDouble(NULL, 0, nRow);
-	if(!ExlInvoke(m_pdispWorksheet, L"Cells",&vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+	if(!ExlInvoke(m_pdispWorksheets[sheet], L"Cells",&vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
 		return szValue;
     
 	if (!ExlInvoke(vargRng.pdispVal, L"Value", &vargValue, DISPATCH_PROPERTYGET, 0))
@@ -1047,221 +804,148 @@ CString CXLAutomation::GetCellValueCString(int nColumn, int nRow)
 	return szValue;
 
 }
-//Insert picture from file szFileName to worksheet
-//The left top corner of the picture is position in (Column, nRow)  
-//on the worksheet
-//Size of the picture in % of original size is given by dPicWidth, dPicHeight
-//If dPicWidth = 0.0, dPicHeight = 0.0 or dPicWidth = 1.0, dPicHeight = 1.0
-//the picture has default (i.e., original) size 
-BOOL CXLAutomation::InsertPictureToWorksheet(CString szFileName, int Column, int Row, double dPicWidth, double dPicHeight)
-{
-	//No file name provided. Leave. 
-	if(szFileName.IsEmpty())
-		return FALSE;
-	if(NULL == m_pdispWorksheet)
-		return FALSE;
 
-	//First, select cell where you want copy the picture (i.e., the top left corner of the picture
-	//Leave if Column and Row are outside the worksheet
-	if((Column < 1) || (Row < 1))
-		return FALSE;
-
-	VARIANTARG vargRng, vargActiveCell;
-	VARIANTARG varg1, varg2;
-	
-	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, Column);
-	AddArgumentDouble(NULL, 0, Row);
-	if(!ExlInvoke(m_pdispWorksheet, L"Cells",&vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	ClearAllArgs();
-	if(!ExlInvoke(vargRng.pdispVal, L"Select",&vargActiveCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	ReleaseVariant(&vargRng);
-	ReleaseVariant(&vargActiveCell);
-
-	//Run this macros to incert picture from file 
-	//ActiveSheet.Pictures.Insert("c:\mypicture.bmp").Select
-	//or
-	//ActiveSheet.Pictures.Insert ("C:\mypicture.bmp")
-    //ActiveSheet.Pictures.ShapeRange.ScaleWidth 0.31, msoScaleFromTopLeft
-	ClearAllArgs();
-	if (!ExlInvoke(m_pdispWorksheet, L"Pictures", &varg1, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	ClearAllArgs();
-	AddArgumentCString(NULL, 0, szFileName);
-	if (!ExlInvoke(varg1.pdispVal, L"Insert", &varg2, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-
-	if((dPicWidth != 0.0) && (dPicHeight != 0.0))
-	{
-
-		//Run this macros to resize the picture:
-		//Selection.ShapeRange.ScaleWidth dPicWidth, msoFalse, msoScaleFromTopLeft
-		//Selection.ShapeRange.ScaleHeight dPicWidth, msoFalse, msoScaleFromTopLeft
-		VARIANTARG vargImage;
-		ClearAllArgs();
-		if (!ExlInvoke(varg1.pdispVal, L"ShapeRange", &vargImage, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-			return FALSE;
-
-		ClearAllArgs();
-		//msoScaleFromTopLeft = 0 - this argument indicate scaling from top left
-		AddArgumentInt2(NULL, 0, 0);
-		AddArgumentDouble(NULL, 0, dPicWidth);
-     	if (!ExlInvoke(vargImage.pdispVal, L"ScaleWidth", NULL, DISPATCH_METHOD, 0)) //DISP_FREEARGS))
-			return FALSE;
-		if (!ExlInvoke(vargImage.pdispVal, L"ScaleHeight", NULL, DISPATCH_METHOD, 0)) //DISP_FREEARGS))
-			return FALSE;
-		ClearAllArgs();
-		ReleaseVariant(&vargImage);
-		
-	}
-	ReleaseVariant(&varg1);
-	ReleaseVariant(&varg2);
-	return TRUE;
-}
-//Paste image to clipborad
-BOOL CXLAutomation::PlaceImageToClipboard(BYTE *pImage)
-{
-	if(NULL == pImage)
-		return FALSE;
-	LPBITMAPINFOHEADER pBmpHeader = (LPBITMAPINFOHEADER) pImage;
-	long nImageBufferSize;
-	//Find the size of buffer to store this image
-	long nBitCount = pBmpHeader->biBitCount;
-	long nWidth = pBmpHeader->biWidth;
-	long nHeight = pBmpHeader->biHeight;
-
-
-	//We will support only 8-bit and 24-bit images
-	//8-bit image has 4x256 = 1024-byte palette table followed after the bitmapinfoheader 
-	//24-bit image does not have the palette table
-	//When calculating buffer size remember that the BMP image is 32-bit alligned
-	if((nBitCount != 8) && (nBitCount != 24))
-		return FALSE;
-	//calculate number of bytes in one image line
-	long nBytePerLine = (nBitCount / 8) * nWidth;
-	//Here, for instance 72-bit line should be rounded to 96-bit to be 32-bit aligned 
-	nBytePerLine =  4 * ((nBytePerLine + 3) / 4); 
-	nImageBufferSize = sizeof(BITMAPINFOHEADER) + (nBytePerLine * nHeight);
-	//if image is 8-bit, add the size of palette table
-	if(8 == nBitCount)
-		nImageBufferSize = nImageBufferSize + 256 * sizeof(RGBQUAD);
-
-	  //Place image to clipboard 	 
-	  if (OpenClipboard(NULL) )
-	  {
-		HGLOBAL hClipMem;
-		BYTE* buffer;
-		BOOL bResult = TRUE;
-		EmptyClipboard();
-		hClipMem = GlobalAlloc(GMEM_DDESHARE, nImageBufferSize);
-		//hClipMem = GlobalAlloc(GMEM_MOVEABLE, nImageBufferSize);
-		buffer = (BYTE*)GlobalLock(hClipMem);
-		memcpy(buffer, pImage, nImageBufferSize);
-		SetClipboardData(CF_DIB, hClipMem);
-		GlobalUnlock(hClipMem);
-		CloseClipboard();
-		return TRUE;
-	  }
-	return FALSE;
-}
-//Insert image to worksheet using clipboard
-BOOL CXLAutomation::InsertPictureToWorksheet(BYTE *pImage, int Column, int Row, double dPicWidth, double dPicHeight)
-{
-	//Place image to clipboard
-	if(NULL != pImage)
-		if(!PlaceImageToClipboard(pImage))
-			return FALSE;
-	
-	//Select cell where you want copy the picture (i.e., the top left corner of the picture
-	//Leave if Column and Row are outside the worksheet
-	if((Column < 1) || (Row < 1))
-		return FALSE;
-
-	VARIANTARG vargCell, vargActiveCell;
-	VARIANTARG vargActiveSelection;
-	
-	ClearAllArgs();
-	AddArgumentDouble(NULL, 0, Column);
-	AddArgumentDouble(NULL, 0, Row);
-	if(!ExlInvoke(m_pdispWorksheet, L"Cells",&vargCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	ClearAllArgs();
-	if(!ExlInvoke(vargCell.pdispVal, L"Select",&vargActiveCell, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	ReleaseVariant(&vargCell);
-	ReleaseVariant(&vargActiveCell);
-
-	//Paste image from clipboard
-	//by runing:
-	//ActiveSheet.Paste
-	ClearAllArgs();
-	if (!ExlInvoke(m_pdispWorksheet, L"Paste", &vargActiveSelection, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	ReleaseVariant(&vargActiveSelection);
-
-	//Select image
-	if (!ExlInvoke(m_pdispWorksheet, L"Pictures", &vargActiveSelection, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	//Resize image
-	if((dPicWidth != 0.0) && (dPicHeight != 0.0))
-	{
-	
-		//Run this macros to resize the picture:
-		//Selection.ShapeRange.ScaleWidth dPicWidth, msoFalse, msoScaleFromTopLeft
-		//Selection.ShapeRange.ScaleHeight dPicWidth, msoFalse, msoScaleFromTopLeft
-		VARIANTARG vargImage;
-		ClearAllArgs();
-		if (!ExlInvoke(vargActiveSelection.pdispVal, L"ShapeRange", &vargImage, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-			return FALSE;
-
-		ClearAllArgs();
-		//msoScaleFromTopLeft = 0 - this argument indicate scaling from top left
-		AddArgumentInt2(NULL, 0, 0);
-		AddArgumentDouble(NULL, 0, dPicWidth);
-     	if (!ExlInvoke(vargImage.pdispVal, L"ScaleWidth", NULL, DISPATCH_METHOD, 0)) //DISP_FREEARGS))
-			return FALSE;
-		if (!ExlInvoke(vargImage.pdispVal, L"ScaleHeight", NULL, DISPATCH_METHOD, 0)) //DISP_FREEARGS))
-			return FALSE;
-		ClearAllArgs();
-		ReleaseVariant(&vargImage);
-		
-	}
-	ReleaseVariant(&vargActiveSelection);
-	return TRUE;
-}
 //Open Microsoft Excel file and switch to the firs available worksheet. 
-BOOL CXLAutomation::OpenExcelFile(CString szFileName)
-{
-	//Leave if the file cannot be open
-	if(NULL == m_pdispExcelApp)
+BOOL CXLAutomation::OpenExcelFile(CString szFileName) {
+	// Leave if the file cannot be opened
+	if (NULL == m_pdispExcelApp)
 		return FALSE;
-	if(szFileName.IsEmpty())
+	if (szFileName.IsEmpty())
 		return FALSE;
 
-	VARIANTARG varg1, vargWorkbook, vargWorksheet;
+	VARIANTARG varg1, vargWorkbook;
 	ClearAllArgs();
 	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
 		return FALSE;
-		
+
 	ClearAllArgs();
 	AddArgumentCString(L"Filename", 0, szFileName);
-	if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+	if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
 		return FALSE;
 
-	//Now let's get the first worksheet of this workbook
-	ClearAllArgs();
-	AddArgumentInt2(NULL, 0, 1);
-	if (!ExlInvoke(vargWorkbook.pdispVal, L"Worksheets", &vargWorksheet, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-
-	//Close the empty worksheet
-	ClearAllArgs();
-	if (!ExlInvoke(m_pdispWorkbook, L"Close", NULL, DISPATCH_PROPERTYGET, DISP_FREEARGS))
-		return FALSE;
-	//Remember the newly open worksheet 
 	m_pdispWorkbook = vargWorkbook.pdispVal;
-	m_pdispWorksheet = vargWorksheet.pdispVal;
+
+	// Loop through sheet names and find corresponding worksheet objects
+	for (int i = 0; i < WS_NUM_SHEET_COUNT; i++) {
+		if (!FindAndStoreWorksheet(m_pdispWorkbook, gSheetNames[i], &m_pdispWorksheets[i])) {
+			// Error handling if a sheet is not found
+			MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
+			return FALSE;
+		}
+	}
+
 	return TRUE;
 }
+
+
+//Open Microsoft Excel file and switch to the firs available worksheet. 
+BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
+	// Leave if the file cannot be opened
+	if (NULL == m_pdispExcelApp)
+		return FALSE;
+	if (szFileName.IsEmpty())
+		return FALSE;
+
+	// Check if the file exists
+	CFileFind fileFinder;
+	BOOL fileExists = fileFinder.FindFile(szFileName);
+
+	VARIANTARG varg1, vargWorkbook;
+	ClearAllArgs();
+	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
+		return FALSE;
+
+	if (fileExists) {
+		// If the file exists, open it
+		ClearAllArgs();
+		AddArgumentCString(L"Filename", 0, szFileName);
+		if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+	}
+	else {
+		// If the file doesn't exist, create a new workbook and save it
+		ClearAllArgs();
+		if (!ExlInvoke(varg1.pdispVal, L"Add", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+
+		// Save the newly created workbook with the provided file name
+		ClearAllArgs();
+		AddArgumentCString(L"Filename", 0, szFileName);
+		if (!ExlInvoke(vargWorkbook.pdispVal, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+	}
+
+	m_pdispWorkbook = vargWorkbook.pdispVal;
+
+	// Add new sheet if specified
+	AddNewSheet(strSheetName);
+
+	BSTR b;
+	b = strSheetName.AllocSysString();
+
+	// Find and store the newly added sheet
+	if (!FindAndStoreWorksheet(m_pdispWorkbook, b, &m_pdispWorksheets[WS_NUM_DEBUG_INFO])) {
+		// Error handling if a sheet is not found
+		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL CXLAutomation::AddNewSheet(CString sheetName)
+{
+	if (m_pdispExcelApp == NULL || m_pdispWorkbook == NULL)
+		return FALSE;
+
+	VARIANTARG vargSheets, vargNewSheet;
+	VariantInit(&vargSheets);
+	VariantInit(&vargNewSheet);
+
+	// Get the Worksheets collection
+	if (!ExlInvoke(m_pdispWorkbook, L"Worksheets", &vargSheets, DISPATCH_PROPERTYGET, 0))
+	{
+		MessageBox(NULL, _T("Failed to get Worksheets collection."), _T("Error"), MB_OK | MB_ICONERROR);
+		return FALSE;
+	}
+
+	// Add a new sheet
+	ClearAllArgs();
+	if (!ExlInvoke(vargSheets.pdispVal, L"Add", &vargNewSheet, DISPATCH_METHOD, 0))
+	{
+		MessageBox(NULL, _T("Failed to add new sheet."), _T("Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargSheets);
+		return FALSE;
+	}
+
+	// Set the sheet name
+	ClearAllArgs();
+	AddArgumentCString(NULL, 0, sheetName);
+	if (!ExlInvoke(vargNewSheet.pdispVal, L"Name", NULL, DISPATCH_PROPERTYPUT, 0))
+	{
+		MessageBox(NULL, _T("Failed to set sheet name."), _T("Error"), MB_OK | MB_ICONERROR);
+		VariantClear(&vargSheets);
+		VariantClear(&vargNewSheet);
+		return FALSE;
+	}
+
+	VariantClear(&vargSheets);
+	VariantClear(&vargNewSheet);
+
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////
+//song
+BOOL CXLAutomation::FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetName, IDispatch** ppSheet) {
+	VARIANTARG vargSheet;
+	ClearAllArgs();
+	AddArgumentOLEString(NULL, 0, sheetName);
+
+	if (!ExlInvoke(pWorkbook, L"Worksheets", &vargSheet, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	*ppSheet = vargSheet.pdispVal;
+	return TRUE;
+}
+
