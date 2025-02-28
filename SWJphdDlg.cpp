@@ -3,6 +3,7 @@
 //
 
 #include "pch.h"
+#include "GlobalEnv.h"
 #include "framework.h"
 #include "SWJphd.h"
 #include "SWJphdDlg.h"

@@ -6,6 +6,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "pch.h"
+#include "GlobalEnv.h"
 #include "XLEzAutomation.h"
 
 #ifdef _DEBUG

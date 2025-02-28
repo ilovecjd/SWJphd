@@ -4,6 +4,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "pch.h"
+#include "GlobalEnv.h"
 #include "XLAutomation.h"
 #include <ole2ver.h>
 #include <string.h>
@@ -15,9 +16,6 @@
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
-
-
-extern LPOLESTR gSheetNames[WS_TOTAL_SHEET_COUNT] ;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

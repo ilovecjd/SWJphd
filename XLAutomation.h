@@ -9,14 +9,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-enum SheetName {
-	WS_NUM_GENV = 0,	
-	WS_NUM_DASHBOARD,
-	WS_NUM_PROJECT,
-	WS_NUM_ACTIVITY_STRUCT,
-	WS_NUM_DEBUG_INFO,
-	WS_TOTAL_SHEET_COUNT // Total number of sheets
-};
 
 // CXLAutomation class definition
 class CXLAutomation
