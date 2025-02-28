@@ -1,4 +1,4 @@
-// EzAutomation.h: interface for the CXLEzAutomation class.
+﻿// EzAutomation.h: interface for the CXLEzAutomation class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -12,19 +12,44 @@
 #include "XLAutomation.h"
 #define xlNormal -4143
 
-class CXLEzAutomation  
+class CXLEzAutomation
 {
 public:
-	BOOL InsertPictureFromBuffer(BYTE* pImage, int Column, int Row, double dXScale, double dYScale);
 	BOOL OpenExcelFile(CString szFileName);
-	BOOL PlacePictureToClipboard(BYTE* pImage);
-	BOOL InsertPictureFromClipboard(int Column, int Row);
-	BOOL InsertPictureFromFile(CString szFileName, int Column, int Row);
-	CString GetCellValue(int nColumn, int nRow);
+	BOOL OpenExcelFile(CString szFileName, CString szSheetName);
 	BOOL SaveFileAs(CString szFileName);
-	BOOL DeleteRow(int nRow);
 	BOOL ReleaseExcel();
-	BOOL SetCellValue(int nColumn, int nRow, CString szValue);
+
+	// Overloaded GetCellValue functions
+	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, int* pValue);      // For int
+	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, CString* pValue);  // For CString
+	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, double* pValue);   // For double
+
+	// 셀에 값을 설정하는 함수들 (오버로딩)
+	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, int value);
+	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, CString value);
+	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, double value);
+
+	// Overloaded ReadRangeToArray functions
+	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+
+	// 배열을 Excel에 쓰기
+	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
+
+	BOOL SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	BOOL SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	
+	BOOL ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+
+	BOOL DeleteRow(SheetName sheet, int nRow);
+
+	BOOL ExportCString(SheetName sheet, CString szDataCollection);
+
+	BOOL SaveAndCloseExcelFile(CString szFileName);
+
 	CXLEzAutomation();
 	CXLEzAutomation(BOOL bVisible);
 	virtual ~CXLEzAutomation();

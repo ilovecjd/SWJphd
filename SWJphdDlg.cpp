@@ -8,6 +8,7 @@
 #include "SWJphdDlg.h"
 #include "DlgProxy.h"
 #include "afxdialogex.h"
+#include "XLEzAutomation.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,6 +45,10 @@ BEGIN_MESSAGE_MAP(CSWJphdDlg, CDialogEx)
 	ON_WM_CLOSE()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BTN_ENV_OPEN, &CSWJphdDlg::OnBnClickedBtnEnvOpen)
+	ON_BN_CLICKED(IDC_BTN_SAVE_FILE_NAME, &CSWJphdDlg::OnBnClickedBtnSaveFileName)
+	ON_BN_CLICKED(IDC_BTN_ENV_LOAD, &CSWJphdDlg::OnBnClickedBtnEnvLoad)
+	ON_BN_CLICKED(IDC_BUTTON1, &CSWJphdDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -59,6 +64,14 @@ BOOL CSWJphdDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+		
+	// 컨트롤 변수와 연결
+	m_editEnvFilePath.SubclassDlgItem(IDC_EDIT_ENV_FILE_PATH, this);
+	m_editSaveFilePath.SubclassDlgItem(IDC_EDIT_SAVE_FILE_PATH, this);
+
+	// 레지스트리에서 파일 경로 읽기
+	LoadFilePathFromRegistry();
+
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -107,18 +120,22 @@ HCURSOR CSWJphdDlg::OnQueryDragIcon()
 
 void CSWJphdDlg::OnClose()
 {
+	// 레지스트리에 파일 경로 저장
+	SaveFilePathToRegistry();
 	if (CanExit())
 		CDialogEx::OnClose();
 }
 
 void CSWJphdDlg::OnOK()
 {
+	SaveFilePathToRegistry();
 	if (CanExit())
 		CDialogEx::OnOK();
 }
 
 void CSWJphdDlg::OnCancel()
 {
+	SaveFilePathToRegistry();
 	if (CanExit())
 		CDialogEx::OnCancel();
 }
@@ -137,3 +154,134 @@ BOOL CSWJphdDlg::CanExit()
 	return TRUE;
 }
 
+
+void CSWJphdDlg::LoadFilePathFromRegistry()
+{
+	CRegKey regKey;
+	LONG lResult = regKey.Open(HKEY_CURRENT_USER, _T("Software\\SWJphd"), KEY_READ);
+
+	if (lResult == ERROR_SUCCESS) {
+		TCHAR szEnvValue[MAX_PATH] = { 0 };
+		ULONG nChars = MAX_PATH;
+		if (regKey.QueryStringValue(_T("LastEnvFilePath"), szEnvValue, &nChars) == ERROR_SUCCESS) {
+			m_strEnvFilePath = szEnvValue;
+		}
+
+		TCHAR szSaveValue[MAX_PATH] = { 0 };
+		nChars = MAX_PATH;
+		if (regKey.QueryStringValue(_T("LastSaveFilePath"), szSaveValue, &nChars) == ERROR_SUCCESS) {
+			m_strSaveFilePath = szSaveValue;
+		}
+
+		// 명시적으로 레지스트리 닫기 (필수는 아님)
+		regKey.Close();
+	}
+
+	// 에디트 컨트롤에 값 설정
+	if (GetDlgItem(IDC_EDIT_ENV_FILE_PATH)) {
+		SetDlgItemText(IDC_EDIT_ENV_FILE_PATH, m_strEnvFilePath);
+	}
+	if (GetDlgItem(IDC_EDIT_SAVE_FILE_PATH)) {
+		SetDlgItemText(IDC_EDIT_SAVE_FILE_PATH, m_strSaveFilePath);
+	}
+}
+
+void CSWJphdDlg::SaveFilePathToRegistry()
+{
+	CRegKey regKey;
+
+	// 레지스트리 키 생성 (또는 열기)
+	if (regKey.Create(HKEY_CURRENT_USER, _T("Software\\SWJphd")) == ERROR_SUCCESS) {
+		// 에디트 컨트롤에서 값을 가져와 저장
+		GetDlgItemText(IDC_EDIT_ENV_FILE_PATH, m_strEnvFilePath);
+		regKey.SetStringValue(_T("LastEnvFilePath"), m_strEnvFilePath);
+
+		GetDlgItemText(IDC_EDIT_SAVE_FILE_PATH, m_strSaveFilePath);
+		regKey.SetStringValue(_T("LastSaveFilePath"), m_strSaveFilePath);
+	}
+}
+
+void CSWJphdDlg::OnBnClickedBtnEnvOpen()
+{
+	// 파일 선택 다이얼로그 필터 설정 (xlsx 파일만)
+	CFileDialog fileDlg(TRUE, _T("xlsx"), nullptr, OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
+		_T("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*||"), this);
+
+	// 다이얼로그 표시
+	if (fileDlg.DoModal() == IDOK)
+	{
+		// 선택한 파일 경로 가져오기
+		m_strEnvFilePath = fileDlg.GetPathName();
+
+		// 에디트 박스에 경로 설정
+		SetDlgItemText(IDC_EDIT_ENV_FILE_PATH, m_strEnvFilePath);
+	}
+}
+
+void CSWJphdDlg::OnBnClickedBtnSaveFileName()
+{
+	// 파일 선택 다이얼로그 필터 설정 (xlsx 파일만)
+	CFileDialog fileDlg(TRUE, _T("xlsx"), nullptr, OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
+		_T("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*||"), this);
+
+	// 다이얼로그 표시
+	if (fileDlg.DoModal() == IDOK)
+	{
+		// 선택한 파일 경로 가져오기
+		m_strSaveFilePath = fileDlg.GetPathName();
+
+		// 에디트 박스에 경로 설정
+		SetDlgItemText(IDC_EDIT_SAVE_FILE_PATH, m_strSaveFilePath);
+	}
+}
+
+// 환경변수들을 엑셀파일에서 가져온다.
+void CSWJphdDlg::OnBnClickedBtnEnvLoad()
+{
+	if (m_strEnvFilePath.IsEmpty()) {
+		AfxMessageBox(_T("파일 경로가 설정되지 않았습니다."));
+		return;
+	}
+
+	CXLEzAutomation xlAuto;
+
+	// 엑셀 파일 열기
+	if (!xlAuto.OpenExcelFile(m_strEnvFilePath)) {
+		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
+		return;
+	}
+
+	int i = 7;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_SimulationPeriod); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_HigSkillStaffCount); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_MidSkillStaffCount); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_LowSkillStaffCount); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_initialFunds); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_avgWeeklyProjects); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_HigSkillCostRate); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_MidSkillCostRate); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_LowSkillCostRate); i++;
+
+	SetDlgItemInt(IDC_EDIT_SIM_PERIOD, m_SimulationPeriod);
+	SetDlgItemInt(IDC_EDIT_HIG_HR, m_HigSkillStaffCount);
+	SetDlgItemInt(IDC_EDIT_MID_HR, m_MidSkillStaffCount);
+	SetDlgItemInt(IDC_EDIT_LOW_HR, m_LowSkillStaffCount);
+	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_initialFunds);
+	SetDlgItemInt(IDC_EDIT_AVG_PROJECT, m_avgWeeklyProjects);
+	/*SetDlgItemText(IDC_EDIT_FILEPATH, m_HigSkillCostRate);
+	SetDlgItemText(IDC_EDIT_FILEPATH, m_MidSkillCostRate);
+	SetDlgItemText(IDC_EDIT_FILEPATH, m_LowSkillCostRate);
+	*/
+
+	// 엑셀 파일 닫기
+	xlAuto.ReleaseExcel();
+
+}
+
+void CSWJphdDlg::OnBnClickedButton1()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	
+
+}
