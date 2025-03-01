@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "GlobalEnv.h"
 
 class CSWJphdDlgAutoProxy;
 
@@ -55,16 +56,7 @@ private:
 	void SaveFilePathToRegistry();   // 레지스트리에 경로 저장
 
 
-	int m_SimulationPeriod;
-	int m_HigSkillStaffCount;
-	int m_MidSkillStaffCount;
-	int m_LowSkillStaffCount;
-	int m_initialFunds;
-	int m_avgWeeklyProjects;
-	int m_HigSkillCostRate;
-	int m_MidSkillCostRate;
-	int m_LowSkillCostRate;
-
+	GLOBAL_ENV m_gEnv; // 전역 환경변수들을 담는다.
 
 public:
 	afx_msg void OnBnClickedBtnEnvOpen();

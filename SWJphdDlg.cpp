@@ -26,6 +26,7 @@ CSWJphdDlg::CSWJphdDlg(CWnd* pParent /*=nullptr*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_pAutoProxy = nullptr;
+	memset(&m_gEnv, 0, sizeof(GLOBAL_ENV));
 }
 
 CSWJphdDlg::~CSWJphdDlg()
@@ -251,29 +252,75 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
 		return;
 	}
+		
+	int i = 7;	// Global 환경변수 가져오기
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.simulationPeriod);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higSkillStaffCount);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midSkillStaffCount); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowSkillStaffCount); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.initialFunds);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.avgWeeklyProjects);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higSkillCostRate);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midSkillCostRate);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowSkillCostRate);	i++;
+		
+	i = 19;	// mode1의 환경변수 가져오기
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv0.R0);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv0.P0);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv0.R1);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv0.P1);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv0.R2);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv0.P2);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv0.R3);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv0.P3);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv0.R4);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv0.P4);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv0.R5);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv0.P5);	i++;
 
-	int i = 7;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_SimulationPeriod); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_HigSkillStaffCount); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_MidSkillStaffCount); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_LowSkillStaffCount); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_initialFunds); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_avgWeeklyProjects); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_HigSkillCostRate); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_MidSkillCostRate); i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_LowSkillCostRate); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv1.R0);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv1.P0);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv1.R1);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv1.P1);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv1.R2);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv1.P2);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv1.R3);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv1.P3);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv1.R4);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv1.P4);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv1.R5);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv1.P5);	i++;
 
-	SetDlgItemInt(IDC_EDIT_SIM_PERIOD, m_SimulationPeriod);
-	SetDlgItemInt(IDC_EDIT_HIG_HR, m_HigSkillStaffCount);
-	SetDlgItemInt(IDC_EDIT_MID_HR, m_MidSkillStaffCount);
-	SetDlgItemInt(IDC_EDIT_LOW_HR, m_LowSkillStaffCount);
-	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_initialFunds);
-	SetDlgItemInt(IDC_EDIT_AVG_PROJECT, m_avgWeeklyProjects);
-	/*SetDlgItemText(IDC_EDIT_FILEPATH, m_HigSkillCostRate);
-	SetDlgItemText(IDC_EDIT_FILEPATH, m_MidSkillCostRate);
-	SetDlgItemText(IDC_EDIT_FILEPATH, m_LowSkillCostRate);
-	*/
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv2.R0);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv2.P0);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv2.R1);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv2.P1);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv2.R2);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv2.P2);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv2.R3);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv2.P3);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv2.R4);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv2.P4);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 2, &m_gEnv.mEnv2.R5);
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mEnv2.P5);	i++;
 
+	// Global 환경 변수 업데이트
+	SetDlgItemInt(IDC_EDIT_SIM_PERIOD,	m_gEnv.simulationPeriod);
+	SetDlgItemInt(IDC_EDIT_HIG_HR,		m_gEnv.higSkillStaffCount);
+	SetDlgItemInt(IDC_EDIT_MID_HR,		m_gEnv.midSkillStaffCount);
+	SetDlgItemInt(IDC_EDIT_LOW_HR,		m_gEnv.lowSkillStaffCount);
+	SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.initialFunds);
+
+	CString strTemp;
+	strTemp.Format(_T("%.2f"), m_gEnv.avgWeeklyProjects);  //
+	SetDlgItemText(IDC_EDIT_AVG_PROJECT, strTemp);
+
+	//SetDlgItemInt(IDC_EDIT_AVG_PROJECT,	m_gEnv.avgWeeklyProjects,FALSE);
+	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.higSkillCostRate);
+	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.midSkillCostRate);
+	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.lowSkillCostRate);
+
+	
 	// 엑셀 파일 닫기
 	xlAuto.ReleaseExcel();
 
