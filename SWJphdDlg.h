@@ -4,6 +4,7 @@
 
 #pragma once
 #include "GlobalEnv.h"
+#include "Creator.h"
 
 class CSWJphdDlgAutoProxy;
 
@@ -56,6 +57,7 @@ private:
 	void SaveFilePathToRegistry();   // 레지스트리에 경로 저장
 
 
+	CCreator m_pCreator;
 	GLOBAL_ENV m_gEnv; // 전역 환경변수들을 담는다.
 
 public:

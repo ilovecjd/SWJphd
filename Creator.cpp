@@ -1,7 +1,8 @@
 ﻿#include "pch.h"
 #include "GlobalEnv.h"
 #include "Creator.h"
-#include <cctype>   // toupper 함수를 사용하기 위해 필요
+#include "XLEzAutomation.h"
+//#include <cctype>   // toupper 함수를 사용하기 위해 필요
 
 CCreator::CCreator()
 {	
@@ -15,9 +16,37 @@ CCreator::~CCreator()
 }
 
 // 문제를 생성한다. 글로벌 환경에서 발생 할 수 있는 프로젝트들을 발생 시키고 파일로 저장한다.
-BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv)
+BOOL CCreator::Init(CString filePath, GLOBAL_ENV* pGlobalEnv)
 {	
-	*(&m_GlobalEnv) = *pGlobalEnv;
+	*(&m_gEnv) = *pGlobalEnv;
+	m_strEnvFilePath = filePath;
+
+	// 엑셀 파일 열기
+	CXLEzAutomation xlAuto;
+	if (!xlAuto.OpenExcelFile(m_strEnvFilePath)) {
+		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
+		return FALSE;
+	}
+	
+	int i = 7;	// Global 환경변수 가져오기
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.simulationPeriod);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCount);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCount); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowHrCount); i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.initialFunds);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.extPrjInTime);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCost);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCost);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowHrCost);	i++;
+
+	i = 19;	// mode1의 환경변수 가져오기
+	
+
+
+
+	// 엑셀 파일 닫기
+	xlAuto.ReleaseExcel();
+
 	m_pProjects.Resize(0,10);
 	m_totalProjectNum = CreateAllProjects();
 
@@ -32,18 +61,18 @@ BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv)
 int CCreator::CreateAllProjects()
 {
 	int prjectId = 0;
-	for (int week = 0; week < m_GlobalEnv.maxWeek; week++)
+	for (int time = 0; time < m_gEnv.maxPeriod; time++)
 	{
-		if (0 == week % (52)) // 1년에 하나씩 내부 프로젝트 발생
+		int newCnt = PoissonRandom(m_gEnv.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
+		for (int i = 0; i < newCnt; i++) // 내부 프로젝트 발생
 		{
-			CreateInternalProject(prjectId++,week);
+			CreateInternalProject(prjectId++, time);
 		}
 
-		int newCnt = PoissonRandom(m_GlobalEnv.avgWeeklyProjects);	// 이번주 발생하는 프로젝트 갯수
-
+		newCnt = PoissonRandom(m_gEnv.extPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
 		for (int i = 0; i < newCnt; i++) // 외부 프로젝트 발생
 		{
-			CraterExternalProject(prjectId++,week);
+			CraterExternalProject(prjectId++,time);
 		}
 	}
 
@@ -59,13 +88,76 @@ int CCreator::CreateInternalProject(int Id,int time)
 	Project.category		= 1;	// 프로젝트 분류 (0: 외부 / 1: 내부)
 	Project.ID				= Id;	// 프로젝트의 번호	
 	Project.createTime		= time;	// 발주일
-	Project.startAbleTime	= time;	// 시작 가능일. 내부는 바로 진행가능	
 
+	Project.startAbleTime	= time;	// 시작 가능일. 내부는 바로 진행가능	
+	Project.duration		= 1;		// 프로젝트의 총 기간
+	Project.startTime		= -1;	// 프로젝트의 시작일
+	Project.endTime = time;// +duration - 1;		// 프로젝트 종료일
+
+	int duration = RandomBetween(m_gEnv.minDuration, m_gEnv.maxDuration);
+	// mode 를 만들고 모드별로 인원을 계산한다. 
+	//MakeMode();
+
+	int d = RandomBetween(m_gEnv.minMode, m_gEnv.maxMode);
+
+	// mode 를 만들고 모드별로 인원을 계산한다. 
+	//MakeMode();
+	// 모드별 인원에 따라서 프로젝트 발주금액을 계산한다.
+	//
 	//Project.profit = CalculateHRAndProfit(&Project); // 총 수익을 계산한다.
 	//Project.profit = Project.profit * m_GlobalEnv.multiples/(52*3);
 	m_pProjects[0][Id] = Project;
 
 	return 0;
+}
+
+int CCreator::MakeMode(PROJECT* pProject,int duration, int intOrExt )
+{	
+	int nHigh = 0, nMid = 0, nLow = 0;
+
+	// 기간이 1~3이면: 고급 또는 중급 1명 (둘 중 하나만 할당)
+	if (duration >= 1 && duration <= 3)
+	{
+		if (rand() % 2 == 0)
+			nHigh = 1;
+		else
+			nMid = 1;
+	}
+	// 기간이 4~5이면: 고급 1명, 중급 1명 또는 2명 (무작위로 결정)
+	else if (duration >= 4 && duration < 6)
+	{
+		nHigh = 1;
+		nMid = (rand() % 2) + 1; // 1 또는 2
+	}
+	// 기간이 6~12이면: 고급 1명, 중급 1명 또는 2명, 초급 1명 또는 2명 (무작위로 결정)
+	else if (duration >= 6 && duration <= 12)
+	{
+		nHigh = 1;
+		nMid = (rand() % 2) + 1;    // 1 또는 2
+		nLow = (rand() % 2) + 1; // 1 또는 2
+	}
+	else
+	{
+		AfxMessageBox(_T("기간은 1에서 12 사이의 값이어야 합니다."));
+		return 0;
+	}
+
+	// 하나의 기간에 소요되는 인건비
+	double dwTotalCost =  CalculateTotalLaborCost(nHigh, nMid, nLow);
+	dwTotalCost = dwTotalCost * duration;
+
+
+	_MODE tempMode;
+	tempMode.labor_h = nHigh;
+	tempMode.labor_m = nMid;
+	tempMode.labor_l = nLow;
+	//tempMode.expense = ;
+	//tempMode.lifeCycle = 12;
+	//tempMode.success = ;
+	//tempMode.revenue = ;
+
+	return 0;
+	
 }
 
 int CCreator::CraterExternalProject(int Id, int time)
@@ -79,6 +171,11 @@ int CCreator::CraterExternalProject(int Id, int time)
 	Project.createTime		= time;	// 발주일
 	Project.startAbleTime	= time + (rand() % 4);  // // 시작 가능일 ( 0에서 3 사이의 정수 난수 생성)
 	
+
+	// mode 를 만들고 모드별로 인원을 계산한다. 
+	// 모드별 인원에 따라서 프로젝트 발주금액을 계산한다.
+	// 외부프로젝트는 모든 모드를 같게 만든다.
+
 	m_pProjects[0][Id] = Project;
 		
 	return 0;
@@ -114,13 +211,13 @@ double CCreator::CalculateLaborCost(const std::string& grade) {
 
 	switch (upperGrade) {
 	case 'H':
-		directLaborCost = HI_HR_COST;
+		directLaborCost = m_gEnv.higHrCost;
 		break;
 	case 'M':
-		directLaborCost = MI_HR_COST;
+		directLaborCost = m_gEnv.midHrCost;
 		break;
 	case 'L':
-		directLaborCost = LO_HR_COST;
+		directLaborCost = m_gEnv.lowHrCost;
 		break;
 	default:
 		AfxMessageBox(_T("잘못된 등급입니다. 'H', 'M', 'L' 중 하나를 입력하세요."), MB_OK | MB_ICONERROR);

@@ -13,15 +13,16 @@ public:
 
 	// song
 public :
-	
+	CString m_strEnvFilePath;
 	int m_totalProjectNum;	
 	Dynamic2DArray m_orderTable;
 	
-	BOOL Init(GLOBAL_ENV* pGlobalEnv);	
+	BOOL Init(CString filePath, GLOBAL_ENV* pGlobalEnv);	
 	void Save(CString filename, CString strInSheetName);
+	int MakeMode(PROJECT* pProject, int duration, int intOrExt );
 		
-private:	
-	GLOBAL_ENV m_GlobalEnv;	
+private:
+	GLOBAL_ENV m_gEnv;
 	DynamicProjectArray m_pProjects;
 
 	int CreateOrderTable();
