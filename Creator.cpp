@@ -21,47 +21,7 @@ BOOL CCreator::Init(CString filePath, GLOBAL_ENV* pGlobalEnv)
 	*(&m_gEnv) = *pGlobalEnv;
 	m_strEnvFilePath = filePath;
 
-	// 엑셀 파일 열기
-	CXLEzAutomation xlAuto;
-	if (!xlAuto.OpenExcelFile(m_strEnvFilePath)) {
-		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
-		return FALSE;
-	}
 	
-	int i = 7;	// Global 환경변수 가져오기
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.simulationPeriod);	i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxPeriod);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.expenseRate);	i++;
-
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCount);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCount);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowHrCount);		i++;
-
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCost);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCost);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowHrCost);		i++;
-
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.initialFunds);	i++;
-
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.extPrjInTime);	i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.intPrjInTime);	i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.minDuration);	i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxDuration);	i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.durRule);		i++;
-
-	// mode의 환경변수 가져오기
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.minMode);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxMode);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lifeCycle);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.erevenueRate);	i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu1Rate);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu2Rate);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma1Rate);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma2Rate);		i++;
-
-
-	// 엑셀 파일 닫기
-	xlAuto.ReleaseExcel();
 
 	m_pProjects.Resize(0,10);
 	m_totalProjectNum = CreateAllProjects();
@@ -202,8 +162,6 @@ int CCreator::MakeMode(PROJECT* pProject,int duration, int category)
 	return 0;
 	
 }
-
-
 
 // 활동별 투입 인력 생성 및 프로젝트 전체 기대 수익 계산 함수
 double CCreator::CalculateHRAndProfit(PROJECT* pProject) {

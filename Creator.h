@@ -15,11 +15,11 @@ public:
 public :
 	CString m_strEnvFilePath;
 	int m_totalProjectNum;	
-	Dynamic2DArray m_orderTable;
-	
-	BOOL Init(CString filePath, GLOBAL_ENV* pGlobalEnv);	
-	void Save(CString filename, CString strInSheetName);
+	Dynamic2DArray m_orderTable;	
+	BOOL Init(CString filePath, GLOBAL_ENV* pGlobalEnv);
 	int MakeMode(PROJECT* pProject, int duration, int intOrExt );
+
+	void Save(CString filename, CString strInSheetName);
 		
 private:
 	GLOBAL_ENV m_gEnv;

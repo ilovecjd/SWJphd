@@ -244,10 +244,47 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 		AfxMessageBox(_T("파일 경로가 설정되지 않았습니다."));
 		return;
 	}
-	m_pCreator.Init(m_strEnvFilePath, &m_gEnv);
 
-	
+	// 엑셀 파일 열기
+	CXLEzAutomation xlAuto;
+	if (!xlAuto.OpenExcelFile(m_strEnvFilePath)) {
+		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
+		return ;
+	}
 
+	int i = 7;	// Global 환경변수 가져오기
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.simulationPeriod);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxPeriod);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.expenseRate);	i++;
+
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCount);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCount);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowHrCount);		i++;
+
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCost);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCost);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowHrCost);		i++;
+
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.initialFunds);	i++;
+
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.extPrjInTime);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.intPrjInTime);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.minDuration);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxDuration);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.durRule);		i++;
+
+	// mode의 환경변수 가져오기
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.minMode);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxMode);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lifeCycle);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.erevenueRate);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu1Rate);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu2Rate);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma1Rate);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma2Rate);		i++;
+
+	// 엑셀 파일 닫기
+	xlAuto.ReleaseExcel();
 
 	// Global 환경 변수 업데이트
 	SetDlgItemInt(IDC_EDIT_SIM_PERIOD,	m_gEnv.simulationPeriod);
@@ -265,17 +302,13 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.midHrCostRate);
 	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.lowHrCostRate);
 
-	
+	m_pCreator.Init(m_strEnvFilePath, &m_gEnv);
+
 
 }
 
 void CSWJphdDlg::OnBnClickedButton1()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-
-	CCreator creator;
-
-	creator.Init(m_strEnvFilePath, &m_gEnv);
-	
 
 }
