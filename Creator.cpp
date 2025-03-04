@@ -66,39 +66,37 @@ int CCreator::CreateAllProjects()
 		int newCnt = PoissonRandom(m_gEnv.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
 		for (int i = 0; i < newCnt; i++) // 내부 프로젝트 발생
 		{
-			CreateInternalProject(prjectId++, time);
+			CreateProjects(INTERNAL_PRJ, prjectId++, time);
 		}
 
 		newCnt = PoissonRandom(m_gEnv.extPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
 		for (int i = 0; i < newCnt; i++) // 외부 프로젝트 발생
 		{
-			CraterExternalProject(prjectId++,time);
+			CreateProjects(EXTERNAL_PRJ, prjectId++,time);
 		}
 	}
 
 	return prjectId;
 }
 
-int CCreator::CreateInternalProject(int Id,int time)
+int CCreator::CreateProjects(int category, int Id,int time)
 {
 	PROJECT Project;
-	
 	memset(&Project, 0, sizeof(struct PROJECT));
-
-	Project.category		= 1;	// 프로젝트 분류 (0: 외부 / 1: 내부)
-	Project.ID				= Id;	// 프로젝트의 번호	
-	Project.createTime		= time;	// 발주일
-
-	Project.startAbleTime	= time;	// 시작 가능일. 내부는 바로 진행가능	
-	Project.duration		= 1;		// 프로젝트의 총 기간
-	Project.startTime		= -1;	// 프로젝트의 시작일
-	Project.endTime = time;// +duration - 1;		// 프로젝트 종료일
-
+	
 	int duration = RandomBetween(m_gEnv.minDuration, m_gEnv.maxDuration);
-	// mode 를 만들고 모드별로 인원을 계산한다. 
-	//MakeMode();
+	MakeMode(&Project, duration, category);		// mode 를 만들고 모드별로 인원을 계산한다. 
 
-	int d = RandomBetween(m_gEnv.minMode, m_gEnv.maxMode);
+	Project.category		= category;			// 프로젝트 분류 (0: 외부 / 1: 내부)
+	Project.ID				= Id;					// 프로젝트의 번호	
+	Project.createTime		= time;					// 발주일
+
+	Project.startAbleTime	= time;					// 시작 가능일. 내부는 바로 진행가능	
+	Project.duration		= duration;				// 프로젝트의 총 기간
+	Project.startTime		= -1;					// 프로젝트의 시작일
+	Project.endTime			= time + duration - 1;	// 프로젝트 종료일
+		
+	//int d = RandomBetween(m_gEnv.minMode, m_gEnv.maxMode);
 
 	// mode 를 만들고 모드별로 인원을 계산한다. 
 	//MakeMode();
@@ -111,7 +109,7 @@ int CCreator::CreateInternalProject(int Id,int time)
 	return 0;
 }
 
-int CCreator::MakeMode(PROJECT* pProject,int duration, int intOrExt )
+int CCreator::MakeMode(PROJECT* pProject,int duration, int category)
 {	
 	int nHigh = 0, nMid = 0, nLow = 0;
 
@@ -141,45 +139,55 @@ int CCreator::MakeMode(PROJECT* pProject,int duration, int intOrExt )
 		AfxMessageBox(_T("기간은 1에서 12 사이의 값이어야 합니다."));
 		return 0;
 	}
-
-	// 하나의 기간에 소요되는 인건비
-	double dwTotalCost =  CalculateTotalLaborCost(nHigh, nMid, nLow);
-	dwTotalCost = dwTotalCost * duration;
-
-
+	
+	double expense	=  CalculateTotalLaborCost(nHigh, nMid, nLow);// 하나의 기간에 소요되는 인건비
+	expense			= expense * duration;// 전체 인건비
+	int revenue		= (int) (expense * m_gEnv.expenseRate);
+	//double mu		= revenue/m_gEnv.;
+	//double sigma	= ;
+	
 	_MODE tempMode;
-	tempMode.labor_h = nHigh;
-	tempMode.labor_m = nMid;
-	tempMode.labor_l = nLow;
-	//tempMode.expense = ;
-	//tempMode.lifeCycle = 12;
-	//tempMode.success = ;
-	//tempMode.revenue = ;
+	tempMode.higHrCount = nHigh;
+	tempMode.midHrCount = nMid;
+	tempMode.lowHrCount = nLow;
+	tempMode.expense	= (int) expense;
+	tempMode.lifeCycle	= m_gEnv.lifeCycle;
+	//tempMode.revenue	= ;
+	//tempMode.mu			= m_gEnv.;		// 수익의 평균(내부프로젝트만 의미를 가짐)
+	//tempMode.sigma		= ;	//
 
+	pProject->mode0 = tempMode;
+
+	if (category == EXTERNAL_PRJ) // 내부 프로젝트이면 
+	{
+		tempMode.higHrCount = nHigh * 2;
+		tempMode.midHrCount = nMid * 2;
+		tempMode.lowHrCount = nLow * 2 ;
+		tempMode.expense	= (int) (expense *2);
+		tempMode.lifeCycle	= m_gEnv.lifeCycle;
+		//tempMode.revenue	= ;
+		//tempMode.mu			= ;		// 수익의 평균
+		//tempMode.sigma		= ;	//.
+
+		pProject->mode1 = tempMode;
+
+
+		tempMode.higHrCount = nHigh * 2;
+		tempMode.midHrCount = nMid * 2;
+		tempMode.lowHrCount = nLow * 2;
+		tempMode.expense = (int)(expense * 2);
+		tempMode.lifeCycle = m_gEnv.lifeCycle;
+		//tempMode.revenue	= ;
+		//tempMode.mu			= ;		// 수익의 평균
+		//tempMode.sigma		= ;	//.
+		pProject->mode2 = tempMode;
+
+	}
 	return 0;
 	
 }
 
-int CCreator::CraterExternalProject(int Id, int time)
-{
-	PROJECT Project;
 
-	memset(&Project, 0, sizeof(struct PROJECT));
-
-	Project.category		= 0;	// 프로젝트 분류 (0: 외부 / 1: 내부)
-	Project.ID				= Id;	// 프로젝트의 번호	
-	Project.createTime		= time;	// 발주일
-	Project.startAbleTime	= time + (rand() % 4);  // // 시작 가능일 ( 0에서 3 사이의 정수 난수 생성)
-	
-
-	// mode 를 만들고 모드별로 인원을 계산한다. 
-	// 모드별 인원에 따라서 프로젝트 발주금액을 계산한다.
-	// 외부프로젝트는 모든 모드를 같게 만든다.
-
-	m_pProjects[0][Id] = Project;
-		
-	return 0;
-}
 
 // 활동별 투입 인력 생성 및 프로젝트 전체 기대 수익 계산 함수
 double CCreator::CalculateHRAndProfit(PROJECT* pProject) {

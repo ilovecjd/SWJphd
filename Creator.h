@@ -25,20 +25,12 @@ private:
 	GLOBAL_ENV m_gEnv;
 	DynamicProjectArray m_pProjects;
 
-	int CreateOrderTable();
-	int CreateProjects();
-	BOOL CreateActivities(PROJECT* pProject);
+	int CreateAllProjects();
+	int CreateProjects(int category, int Id, int week);		
 	double CalculateHRAndProfit(PROJECT* pProject);
 	double CalculateTotalLaborCost(int highCount, int midCount, int lowCount);
 	double CalculateLaborCost(const std::string& grade);
-	void CalculatePaymentSchedule(PROJECT* pProject);
-
-	void WriteProjet(FILE* fp);
-
-	int CreateAllProjects();
-	int CreateInternalProject(int Id, int week);
-	int CraterExternalProject(int Id, int week);
-	BOOL CreateInternalActivities(PROJECT* pProject);
+	void CalculatePaymentSchedule(PROJECT* pProject);	
 
 public:
 	void PrintProjectInfo();

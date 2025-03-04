@@ -6,6 +6,9 @@
 
 #define MAX_CANDIDATES 50
 
+#define EXTERNAL_PRJ	0
+#define INTERNAL_PRJ	1
+
 // Order Tabe index for easy reference
 enum OrderIndex {
 	ORDER_SUM = 0,
@@ -76,6 +79,7 @@ struct GLOBAL_ENV {
 	//// 전역적인 환경	
 	int		simulationPeriod;
 	int		maxPeriod; // 시뮬레이션 종료 이후의 값들도 추적하기 위해	
+	double	expenseRate;	// 비용계산에 사용되는 제경비 비율
 
 	//// 기본 환경
 	int		higHrCount;		//최초에 보유한 고급 인력
@@ -103,10 +107,9 @@ struct GLOBAL_ENV {
 	double	mu2Rate;		// mode1의 mu1 x mu2Rate = mode2의 mu2
 	double	sigma1Rate;		// mode0의 sigma0 x sigma1Rate = mode1의 sigma1
 	double	sigma2Rate;		// mode1의 sigma1 x sigma2Rate = mode2의 sigma2
-
 	
+	// 미사용 필드
 	
-	double	dwExpenseRate;	// 비용계산에 사용되는 제경비 비율
 	//double	profitRate;		// 프로젝트 총비용 계산에 사용되는 제경비 비율
 	int		selectOrder;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
 
@@ -115,15 +118,15 @@ struct GLOBAL_ENV {
 //////////////////////////////////////////////////////////////
 // 내부프로젝트의 3가지 모드
 struct _MODE {
-	int labor_h;	// 투입되는 고급 인력수
-	int labor_m;	// 투입되는 중급 인력수
-	int labor_l;	// 투입되는 초급 인력수
+	int higHrCount;	// 투입되는 고급 인력수
+	int midHrCount;	// 투입되는 중급 인력수
+	int lowHrCount;	// 투입되는 초급 인력수
 	int expense;	// 모드별 소요 비용
 	int lifeCycle;	// 수익이 발생하는 기간(라이프사이클)
-	double mu;		// 수익의 평균
-	double sigma;	// 수익의 표준편차
 	//int success;	// 내부 프로젝트의 성공확율
 	int revenue;	// 완료후 매달 발생하는 수익
+	double mu;		// 수익의 평균
+	double sigma;	// 수익의 표준편차
 };
 
 
@@ -139,7 +142,7 @@ struct PROJECT {
 	int startTime;		// 프로젝트의 시작일
 	int endTime;		// 프로젝트 종료일
 
-	int revenue;		// 프로젝트의 수주금액
+	int revenue;		// 외부 프로젝트의 수주금액 or 0
 	int firstPay;		// 선금 액수
 	int secondPay;		// 2차 지급 액수
 	int finalPay;		// 3차 지급 액수
@@ -147,7 +150,7 @@ struct PROJECT {
 	int secondPayTime;	// 2차 지급일
 	int finalPayTime;	// 3차 지급일
 
-	_MODE	mode0;
+	_MODE	mode0;		// 신제품개발의 진행 방법중 하나
 	_MODE	mode1;
 	_MODE	mode2;
 
