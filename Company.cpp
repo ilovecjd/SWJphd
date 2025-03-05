@@ -4,14 +4,6 @@
 #include "Creator.h"
 
 
-fsdafdsafs
-dsfadsfa
-dfsa
-sdfa
-fdsa
-dsaf
-zfs
-
 CCompany::CCompany()
 {	
 }

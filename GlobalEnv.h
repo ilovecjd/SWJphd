@@ -31,17 +31,6 @@ int PoissonRandom(double lambda);
 #define RND_HR_M  70
 
 
-// Sheet enumeration for easy reference
-enum SheetName {
-	WS_NUM_GENV = 0,
-	WS_NUM_DASHBOARD,
-	WS_NUM_PROJECT,
-	WS_NUM_ACTIVITY_STRUCT,
-	WS_NUM_DEBUG_INFO,
-	WS_TOTAL_SHEET_COUNT // Total number of sheets
-};
-
-extern LPOLESTR gSheetNames[WS_TOTAL_SHEET_COUNT];// = { L"parameters", L"dashboard", L"project", L"activity_struct", L"debuginfo" };
 
 // mode를 구성하는 환경 변수를 기록
 struct _MODE_ENV {

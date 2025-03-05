@@ -349,58 +349,111 @@ void CCreator::Save(CString filename,CString strInSheetName)
 	book->release();
 }
 */
+
 /*
-void CCreator::PrintProjectInfo() {
 
-	Book* book = xlCreateXMLBook();  // Use xlCreateBook() for xls format	
-
-	// 정품 키 값이 들어 있다. 공개하는 프로젝트 소스코드에는 포함되어 있지 않다. 
-	// 정품 키가 없으면 읽기가 300 컬럼으로 제한된다. 필요시 구매해서 사용 바람.
-	#ifdef INCLUDE_LIBXL_KET
-		book->setKey(_LIBXL_NAME, _LIBXL_KEY);
-	#endif
-
-	Sheet* projectSheet = nullptr;
-	Sheet* dashboardSheet = nullptr;
-
-	if (book->load(L"d:/new.xlsx")) {
-		// File exists, check for specific sheets
-
-		for (int i = 0; i < book->sheetCount(); ++i) {
-			Sheet* sheet = book->getSheet(i);
-			if (std::wcscmp(sheet->name(), L"project") == 0) {
-				projectSheet = sheet;
-				clearSheet(projectSheet);  // Assuming you have a clearSheet function defined
-			}
-			if (std::wcscmp(sheet->name(), L"dashboard") == 0) {
-				dashboardSheet = sheet;
-				clearSheet(dashboardSheet);  // Assuming you have a clearSheet function defined
-			}
+void CCompany::PrintProjects(CXLEzAutomation* pXl)
+{
+	/////////////////////////////////////////////////////////////////////////
+	// project 시트에 헤더 출력	
+	CString strTitle[2][16] = {
+		{
+			_T("Category"), _T("PRJ_ID"), _T("기간"), _T("시작가능"), _T("끝"),
+			_T("발주일"), _T("총수익"), _T("경험"), _T("성공%"), _T("CF갯수"),
+			_T("CF1%"), _T("CF2%"), _T("CF3%"), _T("선금"), _T("중도"), _T("잔금")
+		},
+		{
+			_T("act갯수"), _T(""), _T("Dur"), _T("start"), _T("end"),
+			_T(""), _T("HR_H"), _T("HR_M"), _T("HR_L"), _T(""),
+			_T("mon_cf1"), _T("mon_cf2"), _T("mon_cf3"), _T(""), _T("prjType"), _T("actType")
 		}
+	};
+	pXl->WriteArrayToRange(WS_NUM_PROJECT, 1, 1, (CString*)strTitle, 2, 16);
+	pXl->SetRangeBorder(WS_NUM_PROJECT, 1, 1, 2, 16, 1, xlThin, RGB(0, 0, 0));
 
-		if (!projectSheet) {
-			projectSheet = book->addSheet(L"project");
-		}
 
-		if (!dashboardSheet) {
-			dashboardSheet = book->addSheet(L"dashboard");
-		}
-	}
-	else {
-		// File does not exist, create new file with sheets
-		projectSheet = book->addSheet(L"project");  // Add and assign the 'project' sheet
-		dashboardSheet = book->addSheet(L"dashboard");  // Add and assign the 'dashboard' sheet
+	for (int i = 0; i < m_totalProjectNum; i++)
+	{
+		PROJECT* pProject = m_AllProjects + i;
+		PrintProjectInfo(pXl, pProject);
 	}
 
-	write_project_header(book, projectSheet);
 
-	for (int i = 0; i < m_totalProjectNum; i++) {
-		write_project_body(book, projectSheet, &(m_pProjects[0][i]));  // Assuming write_project_body is defined
-	}
-
-	// Save and release
-	book->save(L"d:/new.xlsx");
-	book->release();
 }
 
+void CCompany::PrintProjectInfo(CXLEzAutomation* pXl, PROJECT* pProject)
+{
+	const int iWidth = 16;
+	const int iHeight = 7;
+	int posX, posY;
+
+	// VARIANT 배열 생성 하고 VT_EMPTY로 초기화
+	VARIANT projectInfo[iHeight][iWidth];
+
+	for (int i = 0; i < iHeight; ++i) {
+		for (int j = 0; j < iWidth; ++j) {
+			VariantInit(&projectInfo[i][j]);
+			projectInfo[i][j].vt = VT_EMPTY;
+		}
+	}
+
+	// 첫 번째 행 설정	
+	posX = 0; posY = 0;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->category;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->ID;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->duration;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->startAvail;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->endDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->orderDate;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = static_cast<int>(pProject->profit);
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->experience;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->winProb;
+
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->nCashFlows;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->cashFlows[0];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->cashFlows[1];
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->cashFlows[2];
+
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->secondPay;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPay;
+
+
+	// 두 번째 행 설정
+	posX = 0; posY = 1;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->numActivities;
+
+	posX = 10;  // 빈 칸을 건너뛰기
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->firstPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->secondPayMonth;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->finalPayMonth;
+
+	posX = 14;  // 빈 칸을 건너뛰기
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->projectType;
+	projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activityPattern;
+
+	// 활동 데이터 설정
+	for (int i = 0; i < pProject->numActivities; ++i) {
+		// 인덱스를 문자열로 변환하고 "Activity" 접두사 추가
+		CString strAct;
+		strAct.Format(_T("Activity%02d"), i + 1);
+
+		posX = 1; // 엑셀의 2행 2열부터 적는다.
+		projectInfo[posY][posX].vt = VT_BSTR; projectInfo[posY][posX++].bstrVal = strAct.AllocSysString();
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].duration;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].startDate;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].endDate;
+
+		posX = 6;  // 두 열 건너뛰기
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].highSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].midSkill;
+		projectInfo[posY][posX].vt = VT_I4; projectInfo[posY][posX++].intVal = pProject->activities[i].lowSkill;
+
+		posY++;
+	}
+
+	int printY = 4 + (pProject->ID - 1) * iHeight;
+	pXl->WriteArrayToRange(WS_NUM_PROJECT, printY, 1, (VARIANT*)projectInfo, iHeight, iWidth);
+	pXl->SetRangeBorderAround(WS_NUM_PROJECT, printY, 1, printY + iHeight - 1, iWidth + 1 - 1, 1, 2, RGB(0, 0, 0));
+}
 */

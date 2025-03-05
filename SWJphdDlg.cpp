@@ -11,6 +11,19 @@
 #include "afxdialogex.h"
 #include "XLEzAutomation.h"
 
+// Sheet enumeration for easy reference
+enum SheetName {
+	WS_NUM_GENV = 0,
+	WS_NUM_DASHBOARD,
+	WS_NUM_PROJECT,
+	WS_NUM_ACTIVITY_STRUCT,
+	WS_NUM_DEBUG_INFO,
+	WS_TOTAL_SHEET_COUNT // Total number of sheets
+};
+
+LPOLESTR gSheetsName[WS_TOTAL_SHEET_COUNT] = { L"GlobalEnv", L"dashboard", L"project", L"activity_struct",L"Debug_info" };
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -247,7 +260,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 
 	// 엑셀 파일 열기
 	CXLEzAutomation xlAuto;
-	if (!xlAuto.OpenExcelFile(m_strEnvFilePath)) {
+	if (!xlAuto.OpenExcelFile(m_strEnvFilePath, gSheetsName, WS_TOTAL_SHEET_COUNT)) {
 		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
 		return ;
 	}
@@ -303,6 +316,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.lowHrCostRate);
 
 	m_pCreator.Init(m_strEnvFilePath, &m_gEnv);
+	PrintAllProject(m_pCreator);
 
 
 }
@@ -310,5 +324,19 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 void CSWJphdDlg::OnBnClickedButton1()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+}
+void CSWJphdDlg::PrintAllProject(CCreator creator)
+{
+	// 엑셀 파일 열기
+	CXLEzAutomation xlAuto;
+	if (!xlAuto.OpenExcelFile(m_strSaveFilePath,_T("temp")) )
+	{
+		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
+		return;
+	}
+
+	//xlAuto.SetCellValue(0, 1, 2, creator.);
+
 
 }

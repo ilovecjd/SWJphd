@@ -15,38 +15,39 @@
 class CXLEzAutomation
 {
 public:
-	BOOL OpenExcelFile(CString szFileName);
+	//BOOL OpenExcelFile(CString szFileName);
+	BOOL OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
 	BOOL OpenExcelFile(CString szFileName, CString szSheetName);
 	BOOL SaveFileAs(CString szFileName);
 	BOOL ReleaseExcel();
 
 	// Overloaded GetCellValue functions
-	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, int* pValue);      // For int
-	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, CString* pValue);  // For CString
-	BOOL GetCellValue(SheetName sheet, int nRow, int nColumn, double* pValue);   // For double
+	BOOL GetCellValue(int sheet, int nRow, int nColumn, int* pValue);      // For int
+	BOOL GetCellValue(int sheet, int nRow, int nColumn, CString* pValue);  // For CString
+	BOOL GetCellValue(int sheet, int nRow, int nColumn, double* pValue);   // For double
 
 	// 셀에 값을 설정하는 함수들 (오버로딩)
-	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, int value);
-	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, CString value);
-	BOOL SetCellValue(SheetName sheet, int nRow, int nColumn, double value);
+	BOOL SetCellValue(int sheet, int nRow, int nColumn, int value);
+	BOOL SetCellValue(int sheet, int nRow, int nColumn, CString value);
+	BOOL SetCellValue(int sheet, int nRow, int nColumn, double value);
 
 	// Overloaded ReadRangeToArray functions
-	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
-	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+	BOOL ReadRangeToArray(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL ReadRangeToArray(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
 
 	// 배열을 Excel에 쓰기
-	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
-	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
-	BOOL WriteArrayToRange(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
+	BOOL WriteArrayToRange(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL WriteArrayToRange(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+	BOOL WriteArrayToRange(int sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
 
-	BOOL SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
-	BOOL SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	BOOL SetRangeBorder(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	BOOL SetRangeBorderAround(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
 	
-	BOOL ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL ReadExRangeConvertInt(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
 
-	BOOL DeleteRow(SheetName sheet, int nRow);
+	BOOL DeleteRow(int sheet, int nRow);
 
-	BOOL ExportCString(SheetName sheet, CString szDataCollection);
+	BOOL ExportCString(int sheet, CString szDataCollection);
 
 	BOOL SaveAndCloseExcelFile(CString szFileName);
 

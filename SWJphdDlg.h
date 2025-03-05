@@ -60,6 +60,8 @@ private:
 	CCreator m_pCreator;
 	GLOBAL_ENV m_gEnv; // 전역 환경변수들을 담는다.
 
+	void PrintAllProject(CCreator m_pCreator);
+
 public:
 	afx_msg void OnBnClickedBtnEnvOpen();
 	afx_msg void OnBnClickedBtnSaveFileName();

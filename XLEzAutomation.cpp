@@ -15,9 +15,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-
-LPOLESTR gSheetNames[WS_TOTAL_SHEET_COUNT] = { L"GlobalEnv", L"dashboard", L"project", L"activity_struct",L"Debug_info"};
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //
@@ -49,7 +46,7 @@ BOOL CXLEzAutomation::ReleaseExcel()
 	return m_pXLServer->ReleaseExcel();
 }
 //Delete line from worksheet
-BOOL CXLEzAutomation::DeleteRow(SheetName sheet, int nRow)
+BOOL CXLEzAutomation::DeleteRow(int sheet, int nRow)
 {
 	return m_pXLServer->DeleteRow(sheet, nRow);
 }
@@ -60,9 +57,9 @@ BOOL CXLEzAutomation::SaveFileAs(CString szFileName)
 }
 
 //Open Excell file
-BOOL CXLEzAutomation::OpenExcelFile(CString szFileName)
+BOOL CXLEzAutomation::OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount)
 {
-	return m_pXLServer->OpenExcelFile(szFileName);
+	return m_pXLServer->OpenExcelFile(szFileName, sheetsName, nSheetCount);
 }
 BOOL CXLEzAutomation::OpenExcelFile(CString szFileName, CString szSheetName)
 {
@@ -71,21 +68,21 @@ BOOL CXLEzAutomation::OpenExcelFile(CString szFileName, CString szSheetName)
 
 // Overloaded GetCellValue functions
 // Returns integer value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nRow, int nColumn, int* pValue)
+BOOL CXLEzAutomation::GetCellValue(int sheet, int nRow, int nColumn, int* pValue)
 {
 	if (pValue == nullptr) return FALSE;
 	return m_pXLServer->GetCellValueInt(sheet, nRow, nColumn, pValue);
 }
 
 // Returns CString value from Worksheet.Cells(nRow, nColumn)
-BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nRow, int nColumn, CString* pValue)
+BOOL CXLEzAutomation::GetCellValue(int sheet, int nRow, int nColumn, CString* pValue)
 {
 	if (pValue == nullptr) return FALSE;
 	return m_pXLServer->GetCellValueCString(sheet, nRow, nColumn, pValue);
 }
 
 // Returns double value from Worksheet.Cells(nColumn, nRow)
-BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nRow, int nColumn, double* pValue)
+BOOL CXLEzAutomation::GetCellValue(int sheet, int nRow, int nColumn, double* pValue)
 {
 	if (pValue == nullptr) return FALSE;
 	return m_pXLServer->GetCellValueDouble(sheet, nRow, nColumn, pValue);
@@ -93,7 +90,7 @@ BOOL CXLEzAutomation::GetCellValue(SheetName sheet, int nRow, int nColumn, doubl
 
 
 // SetCellValue for integer
-BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, int value)
+BOOL CXLEzAutomation::SetCellValue(int sheet, int nRow, int nColumn, int value)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
@@ -101,7 +98,7 @@ BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, int v
 }
 
 // SetCellValue for CString
-BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, CString value)
+BOOL CXLEzAutomation::SetCellValue(int sheet, int nRow, int nColumn, CString value)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
@@ -109,7 +106,7 @@ BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, CStri
 }
 
 // SetCellValue for double
-BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, double value)
+BOOL CXLEzAutomation::SetCellValue(int sheet, int nRow, int nColumn, double value)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
@@ -117,7 +114,7 @@ BOOL CXLEzAutomation::SetCellValue(SheetName sheet, int nRow, int nColumn, doubl
 }
 
 // Overloaded function to read integer values from Excel
-BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
+BOOL CXLEzAutomation::ReadRangeToArray(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
 {
 	if (!m_pXLServer) return FALSE;
 
@@ -127,7 +124,7 @@ BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startC
 }
 
 // Overloaded function to read CString values from Excel
-BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
+BOOL CXLEzAutomation::ReadRangeToArray(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
 {
 	if (!m_pXLServer) return FALSE;
 
@@ -138,7 +135,7 @@ BOOL CXLEzAutomation::ReadRangeToArray(SheetName sheet, int startRow, int startC
 }
 
 // int 배열을 Excel에 쓰기
-BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
+BOOL CXLEzAutomation::WriteArrayToRange(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
@@ -151,7 +148,7 @@ BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int start
 
 // CString 배열을 Excel에 쓰기
 // 배열의 크기를 받아서 엑셀의 range 맞게 변경해서 보낸다. 
-BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
+BOOL CXLEzAutomation::WriteArrayToRange(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols)
 {
 	if (m_pXLServer == NULL)
 		return FALSE;
@@ -161,7 +158,7 @@ BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int start
 	return m_pXLServer->WriteArrayToRangeCString(sheet, startRow, startCol, dataArray, transRows, transCols);
 }
 
-BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
+BOOL CXLEzAutomation::WriteArrayToRange(int sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
 	if (m_pXLServer == NULL)
 		return FALSE;
 
@@ -172,19 +169,19 @@ BOOL CXLEzAutomation::WriteArrayToRange(SheetName sheet, int startRow, int start
 }
 
 
-BOOL CXLEzAutomation::SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
+BOOL CXLEzAutomation::SetRangeBorder(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
 {
 	// Call the underlying CXLAutomation function to set borders
 	return m_pXLServer->SetRangeBorder(sheet, startRow, startCol, endRow, endCol, borderStyle, borderWeight, borderColor);
 }
 
-BOOL CXLEzAutomation::SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
+BOOL CXLEzAutomation::SetRangeBorderAround(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
 {	
 	// Call the function from CXLAutomation
 	return m_pXLServer->SetRangeBorderAround(sheet, startRow, startCol, endRow, endCol, borderStyle, borderWeight, borderColor);
 }
 
-BOOL CXLEzAutomation::ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
+BOOL CXLEzAutomation::ReadExRangeConvertInt(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols)
 {
 	// Call the function from CXLAutomation
 	int transRows = startRow + rows - 1;

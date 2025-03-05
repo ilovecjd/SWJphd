@@ -9,6 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <vector>
 
 // CXLAutomation class definition
 class CXLAutomation
@@ -35,15 +36,16 @@ class CXLAutomation
 #define xlAutomatic -4105 // xlAutomatic for borders color
 
 public:
-	BOOL OpenExcelFile(CString szFileName);	
+	//BOOL OpenExcelFile(CString szFileName);	
+	BOOL OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
 	BOOL OpenExcelFile(CString szFileName, CString strSheetName);
 	BOOL SaveAs(CString szFileName, int nFileFormat, CString szPassword, CString szWritePassword, BOOL bReadOnly, BOOL bBackUp);
-	BOOL DeleteRow(SheetName sheet, long nRow);
+	BOOL DeleteRow(int sheet, long nRow);
 	BOOL ReleaseExcel();
 
 	BOOL AddArgumentCStringArray(LPOLESTR lpszArgName, WORD wFlags, LPOLESTR *paszStrings, int iCount);
-	BOOL SetRangeValueDouble(SheetName sheet, LPOLESTR lpszRef, double d);
-	BOOL SetCellsValueToString(SheetName sheet, double Row, double Column, CString szStr);
+	BOOL SetRangeValueDouble(int sheet, LPOLESTR lpszRef, double d);
+	BOOL SetCellsValueToString(int sheet, double Row, double Column, CString szStr);
 	BOOL AddArgumentOLEString(LPOLESTR lpszArgName, WORD wFlags, LPOLESTR lpsz);
 	BOOL AddArgumentCString(LPOLESTR lpszArgName, WORD wFlags, CString szStr);
 	//BOOL CreateWorkSheet(LPOLESTR strSheetName);
@@ -55,34 +57,34 @@ public:
 	BOOL InitOLE();
 
 	//song 
-	BOOL SetRangeValueAndStyle(SheetName sheet, int startRow, int startCol, int** dataArray, int numRows, int numCols);
-	BOOL GetRange(SheetName sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange);	
-	BOOL ReadRangeToArray(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
+	BOOL SetRangeValueAndStyle(int sheet, int startRow, int startCol, int** dataArray, int numRows, int numCols);
+	BOOL GetRange(int sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange);
+	BOOL ReadRangeToArray(int sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols);
 	
-	BOOL GetCellValueInt(SheetName sheet, int nRow, int nColumn, int* pValue);
-	BOOL GetCellValueCString(SheetName sheet, int nRow, int nColumn, CString* pValue);
-	BOOL GetCellValueDouble(SheetName sheet, int nRow, int nColumn, double* pValue);
-	BOOL GetCellValueVariant(SheetName sheet, int nRow, int nColumn, VARIANTARG* pValue); // 범용 함수 선언
+	BOOL GetCellValueInt(int sheet, int nRow, int nColumn, int* pValue);
+	BOOL GetCellValueCString(int sheet, int nRow, int nColumn, CString* pValue);
+	BOOL GetCellValueDouble(int sheet, int nRow, int nColumn, double* pValue);
+	BOOL GetCellValueVariant(int sheet, int nRow, int nColumn, VARIANTARG* pValue); // 범용 함수 선언
 
 	// 셀에 값을 설정하는 함수들 (오버로딩)
-	BOOL SetCellValueInt(SheetName sheet, int nRow, int nColumn, int value);
-	BOOL SetCellValueCString(SheetName sheet, int nRow, int nColumn, CString value);
-	BOOL SetCellValueDouble(SheetName sheet, int nRow, int nColumn, double value);
+	BOOL SetCellValueInt(int sheet, int nRow, int nColumn, int value);
+	BOOL SetCellValueCString(int sheet, int nRow, int nColumn, CString value);
+	BOOL SetCellValueDouble(int sheet, int nRow, int nColumn, double value);
 	
 	// For reading values from Excel
-	BOOL ReadRangeToIntArray(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);	
-	BOOL ReadRangeToCStringArray(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+	BOOL ReadRangeToIntArray(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL ReadRangeToCStringArray(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
 
-	BOOL WriteArrayToRangeInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
-	BOOL WriteArrayToRangeCString(SheetName sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
-	BOOL WriteArrayToRangeVariant(SheetName sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
+	BOOL WriteArrayToRangeInt(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL WriteArrayToRangeCString(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols);
+	BOOL WriteArrayToRangeVariant(int sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols);
 
 	HRESULT AutoWrap(int autoType, VARIANT* pvResult, IDispatch* pDisp, LPOLESTR ptName, int cArgs...);
 
-	BOOL SetRangeBorder(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
-	BOOL SetRangeBorderAround(SheetName sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	BOOL SetRangeBorder(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
+	BOOL SetRangeBorderAround(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor);
 
-	BOOL ReadExRangeConvertInt(SheetName sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
+	BOOL ReadExRangeConvertInt(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols);
 
 	BOOL AddNewSheet(CString sheetName);
 
@@ -113,10 +115,11 @@ protected:
 		WORD wInvokeAction, WORD wFlags);
 	IDispatch* m_pdispExcelApp;
 	IDispatch* m_pdispWorkbook;
-	IDispatch* m_pdispWorksheets[WS_TOTAL_SHEET_COUNT]; // Array to store worksheet dispatch interfaces
+	// 기존: IDispatch* m_pdispWorksheets[WS_TOTAL_SHEET_COUNT];// Array to store worksheet dispatch interfaces
+	std::vector<IDispatch*> m_pdispWorksheets; 
 
 	BOOL StartExcel();
-	BOOL FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetName, IDispatch** ppSheet);
+	BOOL CXLAutomation::FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetName);
 };
 
 #endif // !defined(AFX_XLAUTOMATION_H__E020CE95_7428_4BEF_A24C_48CE9323C450__INCLUDED_)
