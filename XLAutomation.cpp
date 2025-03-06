@@ -114,8 +114,7 @@ BOOL CXLAutomation::InitOLE()
 	{
 		MessageBox(NULL, _T("Cannot initialize OLE."), _T("Failed"), MB_OK | MB_ICONSTOP);
 		return FALSE;
-	}
-	
+	}	
 		
 	return TRUE;
 
@@ -605,23 +604,24 @@ BOOL CXLAutomation::AddArgumentCStringArray(LPOLESTR lpszArgName, WORD wFlags, L
 //Clean up: release dipatches
 void CXLAutomation::ReleaseDispatch()
 {
-	if (NULL != m_pdispExcelApp) {
+	if (m_pdispExcelApp != NULL) {
 		m_pdispExcelApp->Release();
 		m_pdispExcelApp = NULL;
 	}
 
-	if (NULL != m_pdispWorkbook) {
+	if (m_pdispWorkbook != NULL) {
 		m_pdispWorkbook->Release();
 		m_pdispWorkbook = NULL;
 	}
 
-	// Release all worksheet dispatch pointers
-	for (int i = 0; i < WS_TOTAL_SHEET_COUNT; i++) {
+	// Release all worksheet dispatch pointers using the vector's size
+	for (size_t i = 0; i < m_pdispWorksheets.size(); i++) {
 		if (m_pdispWorksheets[i] != NULL) {
 			m_pdispWorksheets[i]->Release();
 			m_pdispWorksheets[i] = NULL;
 		}
 	}
+	m_pdispWorksheets.clear();
 }
 
 void CXLAutomation::ShowException(LPOLESTR szMember, HRESULT hr, EXCEPINFO *pexcep, unsigned int uiArgErr)
@@ -688,7 +688,7 @@ void CXLAutomation::ShowException(LPOLESTR szMember, HRESULT hr, EXCEPINFO *pexc
 //Selection.Delete Shift:=xlUp
 BOOL CXLAutomation::DeleteRow(int sheet, long nRow)
 {
-	if (NULL == m_pdispWorksheets[sheet])
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG varg1;
@@ -717,12 +717,16 @@ BOOL CXLAutomation::SaveAs(CString szFileName, int nFileFormat, CString szPasswo
 {
 	if(NULL == m_pdispWorkbook)
 		return FALSE;
+
 	ClearAllArgs();
+	// 인자 순서는 Excel SaveAs 메서드의 이름 있는 인자에 맞춰 설정합니다.
 	AddArgumentBool(L"CreateBackup", 0, bBackUp);
 	AddArgumentBool(L"ReadOnlyRecommended", 0, bReadOnly);
 	AddArgumentCString(L"WriteResPassword", 0, szWritePassword);
 	AddArgumentCString(L"Password", 0, szPassword);
+	AddArgumentInt2(L"FileFormat", 0, nFileFormat);
 	AddArgumentCString(L"FileName", 0, szFileName);
+
 	if (!ExlInvoke(m_pdispWorkbook, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS))
 		return FALSE;
 
@@ -804,12 +808,18 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
 	// Add new sheet if specified
 	AddNewSheet(strSheetName);
 
-	BSTR b;
-	b = strSheetName.AllocSysString();
+	BSTR b = strSheetName.AllocSysString();
 
+	//[수정 필요]
+   // m_pdispWorksheets가 vector이므로, 특정 인덱스(예: WS_NUM_DEBUG_INFO)에 접근하기 전에 vector 크기를 확인 및 resize 해야 함
+	//if (m_pdispWorksheets.size() <= WS_NUM_DEBUG_INFO)
+		//m_pdispWorksheets.resize(WS_NUM_DEBUG_INFO + 1, NULL);
+
+	// 기존에는 FindAndStoreWorksheet를 세 개의 매개변수 버전으로 호출하였는데,
+	// vector 방식에 맞춰 해당 함수를 오버로드하거나 별도로 구현해야 함.
+	// 예를 들어, 아래와 같이 수정할 수 있습니다.
 	// Find and store the newly added sheet
-	if (!FindAndStoreWorksheet(m_pdispWorkbook, b, &m_pdispWorksheets[WS_NUM_DEBUG_INFO])) {
-		// Error handling if a sheet is not found
+	if (!FindAndStoreWorksheet(m_pdispWorkbook, b)) {
 		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
@@ -914,7 +924,7 @@ BOOL CXLAutomation::FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetNa
 
 BOOL CXLAutomation::GetRange(int sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargStartCell, vargEndCell;
@@ -1024,7 +1034,7 @@ BOOL CXLAutomation::ReadRangeToArray(int sheet, int startRow, int startCol, int 
 // 엑셀 셀 값 가져오기 (기존 Variant 리턴 함수)
 BOOL CXLAutomation::GetCellValueVariant(int sheet, int nRow, int nColumn, VARIANTARG* pValue)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return false;
 
 	VARIANTARG vargCell;
@@ -1048,7 +1058,7 @@ BOOL CXLAutomation::GetCellValueVariant(int sheet, int nRow, int nColumn, VARIAN
 
 BOOL CXLAutomation::GetCellValueInt(int sheet, int nRow, int nColumn, int* result)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng, vargValue;
@@ -1097,7 +1107,7 @@ BOOL CXLAutomation::GetCellValueInt(int sheet, int nRow, int nColumn, int* resul
 // Get double value from Worksheet.Cells(nColumn, nRow)
 BOOL CXLAutomation::GetCellValueDouble(int sheet, int nRow, int nColumn, double* result)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng, vargValue;
@@ -1183,7 +1193,7 @@ BOOL CXLAutomation::GetCellValueCString(int sheet, int nRow, int nColumn, CStrin
 // SetCellValue for integer
 BOOL CXLAutomation::SetCellValueInt(int sheet, int nRow, int nColumn, int value)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1212,7 +1222,7 @@ BOOL CXLAutomation::SetCellValueInt(int sheet, int nRow, int nColumn, int value)
 // SetCellValue for CString
 BOOL CXLAutomation::SetCellValueCString(int sheet, int nRow, int nColumn, CString value)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1241,7 +1251,7 @@ BOOL CXLAutomation::SetCellValueCString(int sheet, int nRow, int nColumn, CStrin
 // SetCellValue for double
 BOOL CXLAutomation::SetCellValueDouble(int sheet, int nRow, int nColumn, double value)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1269,7 +1279,7 @@ BOOL CXLAutomation::SetCellValueDouble(int sheet, int nRow, int nColumn, double 
 
 // ReadRangeToIntArray: Excel 범위 데이터를 int 배열로 읽어오기
 BOOL CXLAutomation::ReadRangeToIntArray(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols) {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng, vargData;
@@ -1356,7 +1366,7 @@ BOOL CXLAutomation::ReadRangeToIntArray(int sheet, int startRow, int startCol, i
 
 // ReadRangeToCStringArray: Excel 범위 데이터를 CString 배열로 읽어오기
 BOOL CXLAutomation::ReadRangeToCStringArray(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols) {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng, vargData;
@@ -1436,7 +1446,7 @@ BOOL CXLAutomation::ReadRangeToCStringArray(int sheet, int startRow, int startCo
 }
 
 BOOL CXLAutomation::WriteArrayToRangeInt(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols) {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1498,7 +1508,7 @@ BOOL CXLAutomation::WriteArrayToRangeInt(int sheet, int startRow, int startCol, 
 }
 
 BOOL CXLAutomation::WriteArrayToRangeCString(int sheet, int startRow, int startCol, CString* dataArray, int rows, int cols) {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1580,8 +1590,13 @@ BOOL CXLAutomation::WriteArrayToRangeCString(int sheet, int startRow, int startC
 }
 
 
+
+//song if (!GetRange(sheet, startRow, startCol, rows, cols , &vargRng)) 부분이 맞는지 확인 바람. 
+/*위 GetRange 호출도 다른 함수들과 마찬가지로, 만약 rows와 cols가 범위의 크기라면
+startRow + rows - 1, startCol + cols - 1
+로 전달하는 것이 일관성을 유지하는 데 좋습니다.*/
 BOOL CXLAutomation::WriteArrayToRangeVariant(int sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1809,7 +1824,7 @@ borderColor: RGB 값 또는 엑셀의 표준 색상 인덱스를 사용하여 �
 */
 BOOL CXLAutomation::SetRangeBorder(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1878,7 +1893,7 @@ BOOL CXLAutomation::SetRangeBorder(int sheet, int startRow, int startCol, int en
 
 BOOL CXLAutomation::SetRangeBorderAround(int sheet, int startRow, int startCol, int endRow, int endCol, int borderStyle, int borderWeight, int borderColor)
 {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng;
@@ -1946,7 +1961,7 @@ BOOL CXLAutomation::SetRangeBorderAround(int sheet, int startRow, int startCol, 
 }
 
 BOOL CXLAutomation::ReadExRangeConvertInt(int sheet, int startRow, int startCol, int* dataArray, int rows, int cols) {
-	if (m_pdispWorksheets[sheet] == NULL)
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
 
 	VARIANTARG vargRng, vargData;
@@ -2133,3 +2148,16 @@ BOOL CXLAutomation::SaveAndCloseExcelFile(CString szFileName) {
 //
 //	return TRUE;
 //}
+
+
+
+/*GetRange  호출 파라미터 일관성:
+
+예를 들어, ReadRangeToIntArray에서는
+if (!GetRange(sheet, startRow, startCol, rows, startCol + cols - 1, &vargRng))
+와 같이 호출되고 있습니다.
+만약 rows와 cols가 범위의 크기를 의미한다면, 마지막 행과 열은
+startRow + rows - 1, startCol + cols - 1
+로 지정하는 것이 일관성을 유지하는 데 좋습니다.
+다른 함수(예, ReadRangeToCStringArray, WriteArrayToRangeCString)는 이미 그렇게 사용되고 있으므로 
+ReadRangeToIntArray와 WriteArrayToRangeInt/Variant도 동일하게 수정하는 것을 고려하세요.*/
