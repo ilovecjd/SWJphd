@@ -92,6 +92,8 @@ struct GLOBAL_ENV {
 	int		maxMode;
 	int		lifeCycle;		// 제품의 라이프 사이클
 	double	erevenueRate;	// 인건비대비 수익률(총수익을 구할때 사용)
+	int		mu0Rate;		// mu0:sigma0 = mu0Rate:sigma0Rate
+	int		sigma0Rate;		// mu0:sigma0 = 80:20 일때 sigma0 = mu0*20/80
 	double	mu1Rate;		// mode0의 mu0 x mu1Rate = mode1의 mu1
 	double	mu2Rate;		// mode1의 mu1 x mu2Rate = mode2의 mu2
 	double	sigma1Rate;		// mode0의 sigma0 x sigma1Rate = mode1의 sigma1

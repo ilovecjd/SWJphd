@@ -80,6 +80,7 @@ BOOL CSWJphdDlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 		
+	srand((unsigned)time(NULL)); // 무작위 시드 초기화
 	// 컨트롤 변수와 연결
 	m_editEnvFilePath.SubclassDlgItem(IDC_EDIT_ENV_FILE_PATH, this);
 	m_editSaveFilePath.SubclassDlgItem(IDC_EDIT_SAVE_FILE_PATH, this);
@@ -291,6 +292,8 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxMode);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lifeCycle);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.erevenueRate);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu0Rate);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma0Rate);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu1Rate);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu2Rate);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma1Rate);		i++;
@@ -316,8 +319,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.lowHrCostRate);
 
 	m_pCreator.Init(m_strEnvFilePath, &m_gEnv);
-	PrintAllProject(m_pCreator);
-
+	PrintAllProject(&m_pCreator);
 
 }
 
@@ -326,7 +328,7 @@ void CSWJphdDlg::OnBnClickedButton1()
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
 }
-void CSWJphdDlg::PrintAllProject(CCreator creator)
+void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
 {
 	// 엑셀 파일 열기
 	CXLEzAutomation xlAuto;
@@ -336,7 +338,9 @@ void CSWJphdDlg::PrintAllProject(CCreator creator)
 		return;
 	}
 
-	//xlAuto.SetCellValue(0, 1, 2, creator.);
+	int nPrjCnt = 0;
+	nPrjCnt = pCreator->m_totalProjectNum;
+	//xlAuto.SetCellValue(0, 1, 2, pCreator->m_orderTable);
 
 
 }

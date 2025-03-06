@@ -55,6 +55,7 @@ private:
 	
 	void LoadFilePathFromRegistry(); // 레지스트리에서 경로 읽기
 	void SaveFilePathToRegistry();   // 레지스트리에 경로 저장
+	void PrintAllProject(CCreator* pCreator);
 
 
 	CCreator m_pCreator;
