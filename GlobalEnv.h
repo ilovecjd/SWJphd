@@ -31,44 +31,11 @@ int PoissonRandom(double lambda);
 #define RND_HR_M  70
 
 
-
-// mode를 구성하는 환경 변수를 기록
-struct _MODE_ENV {
-	// 
-	int R0; // revenue0
-	int R1; // revenue1
-	int R2; // revenue2
-	int R3; // revenue3
-	int R4; // revenue4
-	int R5; // revenue5
-	int R6; // revenue6
-	int R7; // revenue7
-	int R8; // revenue8
-	int R9; // revenue9
-	int R10; // revenue10
-	int R11; // revenue11
-	int R12; // revenue12
-
-	double P0; // Probability0
-	double P1; // Probability1
-	double P2; // Probability2
-	double P3; // Probability3
-	double P4; // Probability4
-	double P5; // Probability5
-	double P6; // Probability6
-	double P7; // Probability7
-	double P8; // Probability8
-	double P9; // Probability9
-	double P10; // Probability10
-	double P11; // Probability11
-	double P12; // Probability12
-};
-
 struct GLOBAL_ENV {
 	//// 전역적인 환경	
 	int		simulationPeriod;
 	int		maxPeriod; // 시뮬레이션 종료 이후의 값들도 추적하기 위해	
-	double	expenseRate;	// 비용계산에 사용되는 제경비 비율
+	double	technicalFee;	// 인건비대비 기술료율 (총수익을 구할때 사용)
 
 	//// 기본 환경
 	int		higHrCount;		//최초에 보유한 고급 인력
@@ -91,36 +58,26 @@ struct GLOBAL_ENV {
 	int		minMode;
 	int		maxMode;
 	int		lifeCycle;		// 제품의 라이프 사이클
-	double	erevenueRate;	// 인건비대비 수익률(총수익을 구할때 사용)
+	double	profitRate; 	// mode0의 마진율 (revenue 에 이값을 곱한다)
 	int		mu0Rate;		// mu0:sigma0 = mu0Rate:sigma0Rate
 	int		sigma0Rate;		// mu0:sigma0 = 80:20 일때 sigma0 = mu0*20/80
 	double	mu1Rate;		// mode0의 mu0 x mu1Rate = mode1의 mu1
-	double	mu2Rate;		// mode1의 mu1 x mu2Rate = mode2의 mu2
 	double	sigma1Rate;		// mode0의 sigma0 x sigma1Rate = mode1의 sigma1
-	double	sigma2Rate;		// mode1의 sigma1 x sigma2Rate = mode2의 sigma2
-	
-	// 미사용 필드
-	
-	//double	profitRate;		// 프로젝트 총비용 계산에 사용되는 제경비 비율
-	int		selectOrder;	// 선택 순서  1: 먼저 발생한 순서대로 2: 금액이 큰 순서대로 3: 금액이 작은 순서대로
-
+	double	mu2Rate;		// mode1의 mu1 x mu2Rate = mode2의 mu2	
+	double	sigma2Rate;		// mode1의 sigma1 x sigma2Rate = mode2의 sigma2	
 };
 
 //////////////////////////////////////////////////////////////
 // 내부프로젝트의 3가지 모드
 struct _MODE {
-	int higHrCount;	// 투입되는 고급 인력수
-	int midHrCount;	// 투입되는 중급 인력수
-	int lowHrCount;	// 투입되는 초급 인력수
-	int expense;	// 모드별 소요 비용
-	int lifeCycle;	// 수익이 발생하는 기간(라이프사이클)
-	//int success;	// 내부 프로젝트의 성공확율
-	int revenue;	// 완료후 매달 발생하는 수익
-	double mu;		// 수익의 평균
-	double sigma;	// 수익의 표준편차
+	int higHrCount;	    // 투입되는 고급 인력수
+	int midHrCount;	    // 투입되는 중급 인력수
+	int lowHrCount;	    // 투입되는 초급 인력수	
+	int lifeCycle;	    // 수익이 발생하는 기간(라이프사이클)	
+	double mu;		    // 수익의 평균
+	double sigma;	    // 수익의 표준편차
+    int fixedIncome;	// revenue x profitRate / lifeCycle, 완료후 매달 발생하는 수익
 };
-
-
 
 ////////////////////////////////////////////////////////////////////
 // 프로젝트 속성
@@ -145,6 +102,7 @@ struct PROJECT {
 	_MODE	mode1;
 	_MODE	mode2;
 
+	// 이하 미사용
 	int isStart;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
 	int experience;	// 경험 (0: 무경험 1: 유경험)
 	int winProb;		// 성공 확률

@@ -35,6 +35,8 @@ BOOL CCreator::Init(CString filePath, GLOBAL_ENV* pGlobalEnv)
 int CCreator::CreateAllProjects()
 {
     int prjectId = 0;
+	CreateProjects(INTERNAL_PRJ, prjectId++, 0);// 내부는 하나 가지고 시작한다.
+
     for (int time = 0; time < m_gEnv.maxPeriod; time++)
     {
         int newCnt = PoissonRandom(m_gEnv.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
@@ -58,8 +60,15 @@ int CCreator::CreateProjects(int category, int Id, int time)
     PROJECT Project;
     memset(&Project, 0, sizeof(struct PROJECT));
 
-    int duration = RandomBetween(m_gEnv.minDuration, m_gEnv.maxDuration);
-    MakeMode(&Project, duration, category);		    // mode 를 만들고 모드별로 인원을 계산한다. 
+    // 내부 외부에 따라서 최소 기간과 최대 기간이 차이가 있음.
+    int duration = 0;
+    if (EXTERNAL_PRJ == category)
+        duration = RandomBetween(m_gEnv.minDuration, m_gEnv.maxDuration);
+    else
+        duration = RandomBetween(m_gEnv.minMode, m_gEnv.maxMode);
+    
+
+    MakeModeAndRevenue(&Project, duration, category);		    // mode 를 만들고 모드별로 인원을 계산한다. 
 
     Project.category        = category;			    // 프로젝트 분류 (0: 외부 / 1: 내부)
     Project.ID              = Id;					// 프로젝트의 번호	
@@ -70,13 +79,14 @@ int CCreator::CreateProjects(int category, int Id, int time)
     Project.startTime       = -1;					// 프로젝트의 시작일
     Project.endTime         = time + duration - 1;	// 프로젝트 종료일
 
-    int revenue             = Project.mode0.revenue; // 외주는 mode0 와 동일하게
+    int revenue             = Project.revenue;
+
     int pay1     = 0, pay2     = 0, pay3     = 0;    
     int payTime1 = 0, payTime2 = 0, payTime3 = 0;
     
     payTime1 = time;
 
-    if (duration = 1)
+    if (1 == duration)
     {
         pay1     = revenue;// 시작한 달에 전부 받음
     }
@@ -94,8 +104,7 @@ int CCreator::CreateProjects(int category, int Id, int time)
         payTime2    = time + duration / 2;  // 중도금
         payTime3    = Project.endTime;      // 잔금
      }
-
-    Project.revenue         = revenue;
+    
     Project.firstPay        = pay1;
     Project.secondPay       = pay2;
     Project.finalPay        = pay3;
@@ -108,17 +117,16 @@ int CCreator::CreateProjects(int category, int Id, int time)
     return 0;
 }
 
-int CCreator::MakeMode(PROJECT* pProject, int duration, int category)
+int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
 {
+    //1. mode0의 인원 산정
     int nHigh = 0, nMid = 0, nLow = 0;
 
     // 기간이 1~3이면: 고급 또는 중급 1명 (둘 중 하나만 할당)
     if (duration >= 1 && duration <= 3)
     {
-        if (rand() % 2 == 0)
-            nHigh = 1;
-        else
-            nMid = 1;
+        if (rand() % 2 == 0)    nHigh = 1;
+        else                    nMid = 1;
     }
     // 기간이 4~5이면: 고급 1명, 중급 1명 또는 2명 (무작위로 결정)
     else if (duration >= 4 && duration < 7)
@@ -139,210 +147,75 @@ int CCreator::MakeMode(PROJECT* pProject, int duration, int category)
         return 0;
     }
 
-    double expense      = CalculateTotalLaborCost(nHigh, nMid, nLow);// 하나의 기간에 소요되는 인건비
-    expense             = expense * duration; // 기간내 전체 인건비
-    int revenue         = (int)(expense * m_gEnv.expenseRate); // 전체 이익은 제경비 비율만큼 크게
-
-    double p;
-    double mu           = revenue;// 평균은 인건비 수준은 되게
-    double sigma        = revenue * m_gEnv.mu0Rate / m_gEnv.sigma0Rate;
-
+    //2. 프로젝트 수익(인건비x기간x기술료비율), mode0의 인력 기록
+    double expense      = (nHigh*m_gEnv.higHrCost +  nMid*m_gEnv.midHrCost + nLow*m_gEnv.lowHrCost) * duration;    
+    int revenue         = (int)(expense * m_gEnv.technicalFee); // 전체 이익은 기술료 비율만큼 크게
+    pProject->revenue   = revenue;
+    
     _MODE tempMode; //mode 0 
     tempMode.higHrCount = nHigh;
     tempMode.midHrCount = nMid;
     tempMode.lowHrCount = nLow;
-    tempMode.expense    = (int)expense;
-    tempMode.lifeCycle  = m_gEnv.lifeCycle;
-    tempMode.mu         = mu;       		// 수익의 평균(내부프로젝트만 의미를 가짐)
-    tempMode.sigma      = sigma;	        //
+    
+    if (category == INTERNAL_PRJ) // 내부 프로젝트이면
+    { 
+        int lifeCycle, profitRate;
+        double p, mu, sigma, interRevenue;
+        profitRate				= (int) m_gEnv.profitRate;
+        lifeCycle				= m_gEnv.lifeCycle;
+		pProject->revenue		= 0; // 내부는 수익이 없다.
 
-    if (category == EXTERNAL_PRJ) { // 내부 프로젝트이면 
-        double p        = rand(); // 확율
-        double dTemp    = InverseNormal(p, mu, sigma); ;
-        tempMode.revenue= (int)dTemp;
-    }
-    else
-        tempMode.revenue= revenue;
+        //3. mode0를 위한 mu와 sigma, 수익 계산
+        p						= static_cast<double>(rand()) / RAND_MAX;  // 0과 1 사이의 난수;
+        mu						= revenue * profitRate;// 평균은 인건비 수준 x 이익율
+        sigma					= mu * m_gEnv.mu0Rate / m_gEnv.sigma0Rate;
+        interRevenue			= InverseNormal(p, mu, sigma); // mode0의 전체수익, 언제나 0 이상으로 나옴
 
-    pProject->mode0     = tempMode;
+        tempMode.lifeCycle		= lifeCycle;
+        tempMode.mu				= mu;       		// 수익의 평균(내부프로젝트만 의미를 가짐)
+        tempMode.sigma			= sigma;
+        tempMode.fixedIncome	= (int)(interRevenue / lifeCycle); // lifeCycle 동안 한 time에 얻는 수익
 
-    if (category == EXTERNAL_PRJ) // 내부 프로젝트이면 
-    {
-        // for mode1		
-        tempMode.higHrCount = nHigh * 2;
-        tempMode.midHrCount = nMid * 2;
-        tempMode.lowHrCount = nLow * 2;
-        tempMode.expense    = (int)(expense * 2);
-        tempMode.lifeCycle  = m_gEnv.lifeCycle;
+        pProject->mode0 = tempMode;
 
-        p = rand(); // 확율
-        mu              = mu * m_gEnv.mu1Rate;// mode1평균은 mode0의 mu1Rate수준
-        sigma           = sigma * m_gEnv.sigma1Rate; //mode1의 sigma는 mode의 sigma1Rate수준
-        double dTemp    = InverseNormal(p, mu, sigma);
+		//4. mode1을 위한 mu와 sigma, 수익 계산
+        tempMode.higHrCount     = nHigh * 2;
+        tempMode.midHrCount     = nMid * 2;
+        tempMode.lowHrCount     = nLow * 2;
 
-        tempMode.revenue= (int)dTemp;
-        tempMode.mu     = mu;
-        tempMode.sigma  = sigma;
+        p                       = static_cast<double>(rand()) / RAND_MAX;  // 0과 1 사이의 난수
+        mu                      = mu * m_gEnv.mu1Rate;// mode1평균은 mode0의 mu1Rate수준
+        sigma                   = mu * m_gEnv.sigma1Rate; //mode1의 sigma는 mode의 sigma1Rate수준
+        interRevenue            = InverseNormal(p, mu, sigma);
 
-        pProject->mode1 = tempMode;
+        tempMode.lifeCycle      = lifeCycle;
+        tempMode.mu             = mu;
+        tempMode.sigma          = sigma;
+        tempMode.fixedIncome    = (int)(interRevenue / lifeCycle); // lifeCycle 동안 한 time에 얻는 수익
 
-        // for mode2		
-        tempMode.higHrCount = nHigh * 4;
-        tempMode.midHrCount = nMid * 4;
-        tempMode.lowHrCount = nLow * 4;
-        tempMode.expense    = (int)(expense * 4);
-        tempMode.lifeCycle  = m_gEnv.lifeCycle;
+        pProject->mode1			= tempMode;
 
-        p                   = rand(); // 확율
-        mu                  = mu * m_gEnv.mu2Rate;// mode2평균은 mode1의 mu2Rate수준
-        sigma               = sigma * m_gEnv.sigma2Rate; //mode2의 sigma는 mode1의 sigma2Rate수준
-        dTemp               = InverseNormal(p, mu, sigma);
+		//5. mode2을 위한 mu와 sigma, 수익 계산
+        tempMode.higHrCount		= nHigh * 4;
+        tempMode.midHrCount		= nMid * 4;
+        tempMode.lowHrCount		= nLow * 4;
 
-        tempMode.revenue    = (int)dTemp;
-        tempMode.mu         = mu;
-        tempMode.sigma      = sigma;
+        p						= static_cast<double>(rand()) / RAND_MAX;  // 0과 1 사이의 난수
+        mu						= mu * m_gEnv.mu2Rate;// mode2평균은 mode1의 mu2Rate수준
+        sigma					= mu * m_gEnv.sigma2Rate; //mode2의 sigma는 mode1의 sigma2Rate수준
+        interRevenue			= InverseNormal(p, mu, sigma);
 
-        pProject->mode2     = tempMode;
+        tempMode.lifeCycle		= lifeCycle;
+        tempMode.mu				= mu;
+        tempMode.sigma			= sigma;
+        tempMode.fixedIncome	= (int)(interRevenue / lifeCycle); // lifeCycle 동안 한 time에 얻는 수익
+
+        pProject->mode2			= tempMode;
     }
 
     return 0;
 }
 
-// 활동별 투입 인력 생성 및 프로젝트 전체 기대 수익 계산 함수
-double CCreator::CalculateHRAndProfit(PROJECT* pProject) {
-    int high = 0, mid = 0, low = 0;
-
-    return CalculateTotalLaborCost(high, mid, low);
-}
-
-// 등급별 투입 인력 계산 및 프로젝트의 수익 생성 함수
-double CCreator::CalculateTotalLaborCost(int highCount, int midCount, int lowCount) {
-    double highLaborCost = CalculateLaborCost("H") * highCount;
-    double midLaborCost = CalculateLaborCost("M") * midCount;
-    double lowLaborCost = CalculateLaborCost("L") * lowCount;
-
-    double totalLaborCost = highLaborCost + midLaborCost + lowLaborCost;
-    return totalLaborCost;
-}
-
-// 등급별 투입 인력에 따른 수익 계산 함수
-// 수정시 다음도 수정 필요 BOOL CCompany::Init(PGLOBAL_ENV pGlobalEnv, int Id, BOOL shouldLoad)
-double CCreator::CalculateLaborCost(const std::string& grade) {
-    double directLaborCost = 0;
-    double overheadCost = 0;
-    double technicalFee = 0;
-    double totalLaborCost = 0;
-
-    // 입력된 grade를 대문자로 변환
-    char upperGrade = std::toupper(static_cast<unsigned char>(grade[0]));
-
-    switch (upperGrade) {
-    case 'H':
-        directLaborCost = m_gEnv.higHrCost;
-        break;
-    case 'M':
-        directLaborCost = m_gEnv.midHrCost;
-        break;
-    case 'L':
-        directLaborCost = m_gEnv.lowHrCost;
-        break;
-    default:
-        AfxMessageBox(_T("잘못된 등급입니다. 'H', 'M', 'L' 중 하나를 입력하세요."), MB_OK | MB_ICONERROR);
-        return 0; // 잘못된 입력 시 함수 종료
-    }
-
-    overheadCost = directLaborCost * 1.4;// 0.6; // 간접 비용 계산
-    technicalFee = (directLaborCost + overheadCost) * 0.4;// 0.2; // 기술 비용 계산
-    totalLaborCost = directLaborCost + overheadCost + technicalFee; // 총 인건비 계산
-
-    return totalLaborCost;
-}
-
-
-// 대금 지급 조건 생성 함수
-void CCreator::CalculatePaymentSchedule(PROJECT* pProject) {
-
-    int paymentType;
-    int paymentRatio;
-    int totalPayments;
-
-    pProject->firstPayTime = 1;
-
-    // 6주 이하의 짧은 프로젝트는 선금, 잔금만 있다.
-    if (pProject->duration <= 6) {
-        paymentType = rand() % 3 + 1;  // 1에서 3 사이의 난수 생성
-
-        switch (paymentType) {
-        case 1:
-            pProject->firstPay = (int)ceil((double)pProject->profit * 0.3);
-            break;
-        case 2:
-            pProject->firstPay = (int)ceil((double)pProject->profit * 0.4);
-            break;
-        case 3:
-            pProject->firstPay = (int)ceil((double)pProject->profit * 0.5);
-            break;
-        }
-
-        pProject->secondPay = pProject->profit - pProject->firstPay;
-        totalPayments = 2;
-        pProject->secondPayTime = pProject->duration;
-    }
-
-    // 7~12주 사이의 프로젝트는 3회에 걸처셔 받는다.
-    else if (pProject->duration <= 12) {
-        paymentType = rand() % 10 + 1;  // 1에서 10 사이의 난수 생성
-
-        if (paymentType <= 3) {
-            paymentRatio = rand() % 3 + 1;  // 1에서 3 사이의 난수 생성
-
-            switch (paymentRatio) {
-            case 1:
-                pProject->firstPay = (int)ceil((double)pProject->profit * 0.3);
-                break;
-            case 2:
-                pProject->firstPay = (int)ceil((double)pProject->profit * 0.4);
-                break;
-            case 3:
-                pProject->firstPay = (int)ceil((double)pProject->profit * 0.5);
-                break;
-            }
-
-            pProject->secondPay = pProject->profit - pProject->firstPay;
-            totalPayments = 2;
-            pProject->secondPayTime = pProject->duration;
-        }
-        else {
-            paymentRatio = rand() % 10 + 1;  // 1에서 10 사이의 난수 생성
-
-            if (paymentRatio <= 6) {
-                pProject->firstPay = (int)ceil((double)pProject->profit * 0.3);
-                pProject->secondPay = (int)ceil((double)pProject->profit * 0.3);
-            }
-            else {
-                pProject->firstPay = (int)ceil((double)pProject->profit * 0.3);
-                pProject->secondPay = (int)ceil((double)pProject->profit * 0.4);
-            }
-
-            pProject->finalPay = pProject->profit - pProject->firstPay - pProject->secondPay;
-            totalPayments = 3;
-            pProject->secondPayTime = (int)ceil((double)pProject->duration / 2);
-            pProject->finalPayTime = pProject->duration;
-        }
-    }
-
-    // 1년 이상의 프로젝트는 3회에 걸처서 받는다.
-    else {
-        pProject->firstPay = (int)ceil((double)pProject->profit * 0.3);
-        pProject->secondPay = (int)ceil((double)pProject->profit * 0.4);
-        pProject->finalPay = pProject->profit - pProject->firstPay - pProject->secondPay;
-
-        totalPayments = 3;
-        pProject->secondPayTime = (int)ceil((double)pProject->duration / 2);
-        pProject->finalPayTime = pProject->duration;
-    }
-    pProject->nCashFlows = totalPayments;
-}
 
 /*
 void CCreator::Save(CString filename,CString strInSheetName)

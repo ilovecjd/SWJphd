@@ -15,15 +15,16 @@ public:
 public :
 	CString m_strEnvFilePath;
 	int m_totalProjectNum;	
-	Dynamic2DArray m_orderTable;	
+	//Dynamic2DArray m_orderTable;	
+    DynamicProjectArray m_pProjects;
 	BOOL Init(CString filePath, GLOBAL_ENV* pGlobalEnv);
-	int MakeMode(PROJECT* pProject, int duration, int intOrExt );
+	int MakeModeAndRevenue(PROJECT* pProject, int duration, int intOrExt );
 
 	void Save(CString filename, CString strInSheetName);
 		
 private:
 	GLOBAL_ENV m_gEnv;
-	DynamicProjectArray m_pProjects;
+	
 
 	int CreateAllProjects();
 	int CreateProjects(int category, int Id, int week);		

@@ -269,7 +269,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	int i = 7;	// Global 환경변수 가져오기
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.simulationPeriod);	i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxPeriod);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.expenseRate);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.technicalFee);	i++;
 
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCount);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCount);		i++;
@@ -291,7 +291,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.minMode);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxMode);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lifeCycle);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.erevenueRate);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.profitRate);	    i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu0Rate);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma0Rate);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu1Rate);		i++;
@@ -332,15 +332,71 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
 {
 	// 엑셀 파일 열기
 	CXLEzAutomation xlAuto;
-	if (!xlAuto.OpenExcelFile(m_strSaveFilePath,_T("temp")) )
+    LPOLESTR sheetsName[1] = { L"project"};
+	if (!xlAuto.OpenExcelFile(m_strSaveFilePath, sheetsName,1) )
 	{
 		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
 		return;
 	}
 
+#define _PRINT_WIDTH 35
 	int nPrjCnt = 0;
 	nPrjCnt = pCreator->m_totalProjectNum;
-	//xlAuto.SetCellValue(0, 1, 2, pCreator->m_orderTable);
+    CString strTitle[1][_PRINT_WIDTH] = {
+            _T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"), 
+			_T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
+            _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
+			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
+			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익")
+    };
+    xlAuto.WriteArrayToRange(0, 1, 1, (CString*)strTitle, 1, _PRINT_WIDTH);
+    
+    for (int i =0; i <nPrjCnt; i++)
+    {
+        PROJECT* pProject = &(pCreator->m_pProjects[0][i]);
+        int j = 1 ;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->category);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->ID);					j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->createTime);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->startAbleTime);		j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->duration);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->startTime);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->endTime);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->revenue);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->firstPay);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->secondPay);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->finalPay);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->firstPayTime);		j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->secondPayTime);		j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->finalPayTime);		j++;
+
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode0.higHrCount);	j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode0.midHrCount);	j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode0.lowHrCount);	j++;        
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode0.lifeCycle);	j++;        
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode0.mu);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode0.sigma);		j++;
+		xlAuto.SetCellValue(0, i + 2, j, pProject->mode0.fixedIncome);	j++;
+
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode1.higHrCount);	j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode1.midHrCount);	j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode1.lowHrCount);	j++;        
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode1.lifeCycle);	j++;        
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode1.mu);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode1.sigma);		j++;
+		xlAuto.SetCellValue(0, i + 2, j, pProject->mode1.fixedIncome);	j++;
+
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.higHrCount);	j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.midHrCount);	j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.lowHrCount);	j++;        
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.lifeCycle);	j++;        
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.mu);			j++;
+        xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.sigma);		j++;
+		xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.fixedIncome);	j++;
+    }
+
+    // 엑셀 파일 닫기
+    xlAuto.ReleaseExcel();
 
 
 }

@@ -6,9 +6,9 @@
 #include <stdexcept>
 
 int PoissonRandom(double lambda) {
-	int k = 0;
-	double p = 1.0;
-	double L = exp(-lambda);  // L = e^(-lambda)
+	int k		= 0;
+	double p	= 1.0;
+	double L	= exp(-lambda);  // L = e^(-lambda)
 
 	do {
 		k++;
@@ -68,5 +68,11 @@ double InverseNormal(double p, double mu, double sigma)
     }
 
     // 일반 정규분포: mu + sigma * (표준 정규분포 역함수 값)
-    return mu + sigma * result;
+    double value = mu + sigma * result;
+
+    // 리턴값이 0보다 작으면 0을 반환하도록 처리
+    if (value < 0)
+        value = 0;
+
+    return value;
 }
