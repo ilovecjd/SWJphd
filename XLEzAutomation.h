@@ -17,7 +17,7 @@ class CXLEzAutomation
 public:
 	//BOOL OpenExcelFile(CString szFileName);
 	BOOL OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
-	BOOL OpenExcelFile(CString szFileName, CString szSheetName);
+	BOOL OpenExcelFile(CString szFileName, CString szSheetName,BOOL bCreate);
 	BOOL SaveFileAs(CString szFileName);
 	BOOL ReleaseExcel();
 

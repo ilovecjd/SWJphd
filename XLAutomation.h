@@ -38,7 +38,7 @@ class CXLAutomation
 public:
 	//BOOL OpenExcelFile(CString szFileName);	
 	BOOL OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
-	BOOL OpenExcelFile(CString szFileName, CString strSheetName);
+	BOOL OpenExcelFile(CString szFileName, CString strSheetName, BOOL bCreate);
 	BOOL SaveAs(CString szFileName, int nFileFormat, CString szPassword, CString szWritePassword, BOOL bReadOnly, BOOL bBackUp);
 	BOOL DeleteRow(int sheet, long nRow);
 	BOOL ReleaseExcel();

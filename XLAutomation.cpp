@@ -766,15 +766,15 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], int
 }
 
 
-//Open Microsoft Excel file and switch to the firs available worksheet. 
-BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
-	// Leave if the file cannot be opened
-	if (NULL == m_pdispExcelApp)
+BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName, BOOL bCreate)
+{
+	// Excel 애플리케이션이나 파일명이 없으면 실패
+	if (m_pdispExcelApp == NULL)
 		return FALSE;
 	if (szFileName.IsEmpty())
 		return FALSE;
 
-	// Check if the file exists
+	// 파일 존재 여부 확인
 	CFileFind fileFinder;
 	BOOL fileExists = fileFinder.FindFile(szFileName);
 
@@ -784,48 +784,128 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
 		return FALSE;
 
 	if (fileExists) {
-		// If the file exists, open it
+		// 파일이 존재하면 기존 파일 열기
 		ClearAllArgs();
 		AddArgumentCString(L"Filename", 0, szFileName);
 		if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
 			return FALSE;
 	}
 	else {
-		// If the file doesn't exist, create a new workbook and save it
+		// 파일이 없고, 생성 허용(bCreate==TRUE)이 아니면 에러 반환
+		if (!bCreate) {
+			MessageBox(NULL, _T("File not found."), _T("Error"), MB_OK | MB_ICONERROR);
+			return FALSE;
+		}
+		// 새 워크북 생성
 		ClearAllArgs();
 		if (!ExlInvoke(varg1.pdispVal, L"Add", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
 			return FALSE;
-
-		// Save the newly created workbook with the provided file name
+		// 생성된 워크북을 저장 (파일명과 파일 포맷 전달)
 		ClearAllArgs();
 		AddArgumentCString(L"Filename", 0, szFileName);
+		// xlNormal은 -4143 입니다. (엑셀의 기본 파일 형식)
+		AddArgumentInt2(L"FileFormat", 0, -4143);
 		if (!ExlInvoke(vargWorkbook.pdispVal, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS))
 			return FALSE;
 	}
 
 	m_pdispWorkbook = vargWorkbook.pdispVal;
 
-	// Add new sheet if specified
-	AddNewSheet(strSheetName);
+	// 시트 찾기: 지정한 시트가 있는지 확인하고, 없으면 bCreate가 TRUE이면 새 시트를 추가
+	BSTR bSheetName = strSheetName.AllocSysString();
+	BOOL sheetFound = FindAndStoreWorksheet(m_pdispWorkbook, bSheetName);
 
-	BSTR b = strSheetName.AllocSysString();
-
-	//[수정 필요]
-   // m_pdispWorksheets가 vector이므로, 특정 인덱스(예: WS_NUM_DEBUG_INFO)에 접근하기 전에 vector 크기를 확인 및 resize 해야 함
-	//if (m_pdispWorksheets.size() <= WS_NUM_DEBUG_INFO)
-		//m_pdispWorksheets.resize(WS_NUM_DEBUG_INFO + 1, NULL);
-
-	// 기존에는 FindAndStoreWorksheet를 세 개의 매개변수 버전으로 호출하였는데,
-	// vector 방식에 맞춰 해당 함수를 오버로드하거나 별도로 구현해야 함.
-	// 예를 들어, 아래와 같이 수정할 수 있습니다.
-	// Find and store the newly added sheet
-	if (!FindAndStoreWorksheet(m_pdispWorkbook, b)) {
-		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
-		return FALSE;
+	if (!sheetFound) {
+		if (!bCreate) {
+			MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONERROR);
+			SysFreeString(bSheetName);
+			return FALSE;
+		}
+		else {
+			if (!AddNewSheet(strSheetName)) {
+				MessageBox(NULL, _T("Failed to add new sheet."), _T("Error"), MB_OK | MB_ICONERROR);
+				SysFreeString(bSheetName);
+				return FALSE;
+			}
+			// 새로 추가한 시트를 다시 찾음
+			sheetFound = FindAndStoreWorksheet(m_pdispWorkbook, bSheetName);
+			if (!sheetFound) {
+				MessageBox(NULL, _T("Failed to find the newly added worksheet."), _T("Error"), MB_OK | MB_ICONERROR);
+				SysFreeString(bSheetName);
+				return FALSE;
+			}
+		}
 	}
 
+	SysFreeString(bSheetName);
 	return TRUE;
 }
+
+//Open Microsoft Excel file and switch to the firs available worksheet. 
+//BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName, BOOL bCreate) {
+//	// Leave if the file cannot be opened
+//	if (NULL == m_pdispExcelApp)
+//		return FALSE;
+//	if (szFileName.IsEmpty())
+//		return FALSE;
+//
+//	// Check if the file exists
+//	CFileFind fileFinder;
+//	BOOL fileExists = fileFinder.FindFile(szFileName);
+//
+//	VARIANTARG varg1, vargWorkbook;
+//	ClearAllArgs();
+//	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
+//		return FALSE;
+//
+//	if (fileExists) {
+//		// If the file exists, open it
+//		ClearAllArgs();
+//		AddArgumentCString(L"Filename", 0, szFileName);
+//		if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+//			return FALSE;
+//	}
+//	else {
+//		// 파일이 존재하지 않고, 생성 허용(bCreate==TRUE)하지 않으면 실패
+//		if (!bCreate) {
+//			MessageBox(NULL, _T("File not found."), _T("Error"), MB_OK | MB_ICONERROR);
+//			return FALSE;
+//		}
+//		// If the file doesn't exist, create a new workbook and save it
+//		ClearAllArgs();
+//		if (!ExlInvoke(varg1.pdispVal, L"Add", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+//			return FALSE;
+//
+//		// Save the newly created workbook with the provided file name
+//		ClearAllArgs();
+//		AddArgumentCString(L"Filename", 0, szFileName);
+//		if (!ExlInvoke(vargWorkbook.pdispVal, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS))
+//			return FALSE;
+//	}
+//
+//	m_pdispWorkbook = vargWorkbook.pdispVal;
+//
+//	// Add new sheet if specified
+//	AddNewSheet(strSheetName);
+//
+//	BSTR b = strSheetName.AllocSysString();
+//
+//	//[수정 필요]
+//   // m_pdispWorksheets가 vector이므로, 특정 인덱스(예: WS_NUM_DEBUG_INFO)에 접근하기 전에 vector 크기를 확인 및 resize 해야 함
+//	//if (m_pdispWorksheets.size() <= WS_NUM_DEBUG_INFO)
+//		//m_pdispWorksheets.resize(WS_NUM_DEBUG_INFO + 1, NULL);
+//
+//	// 기존에는 FindAndStoreWorksheet를 세 개의 매개변수 버전으로 호출하였는데,
+//	// vector 방식에 맞춰 해당 함수를 오버로드하거나 별도로 구현해야 함.
+//	// 예를 들어, 아래와 같이 수정할 수 있습니다.
+//	// Find and store the newly added sheet
+//	if (!FindAndStoreWorksheet(m_pdispWorkbook, b)) {
+//		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
+//		return FALSE;
+//	}
+//
+//	return TRUE;
+//}
 
 //BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
 //	// Leave if the file cannot be opened

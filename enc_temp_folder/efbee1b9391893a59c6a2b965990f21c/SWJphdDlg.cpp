@@ -263,7 +263,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	CXLEzAutomation xlAuto;
 	//if (!xlAuto.OpenExcelFile(m_strEnvFilePath, gSheetsName, WS_TOTAL_SHEET_COUNT)) {
 	CString strSheet = _T("GlobalEnv");
-	if (!xlAuto.OpenExcelFile(m_strEnvFilePath, strSheet, FALSE)) {
+	if (!xlAuto.OpenExcelFile(m_strEnvFilePath, strSheet, TRUE)) {
 		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
 		return ;
 	}

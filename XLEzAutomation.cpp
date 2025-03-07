@@ -61,9 +61,9 @@ BOOL CXLEzAutomation::OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], i
 {
 	return m_pXLServer->OpenExcelFile(szFileName, sheetsName, nSheetCount);
 }
-BOOL CXLEzAutomation::OpenExcelFile(CString szFileName, CString szSheetName)
+BOOL CXLEzAutomation::OpenExcelFile(CString szFileName, CString szSheetName, BOOL bCreate)
 {
-	return m_pXLServer->OpenExcelFile(szFileName, szSheetName);
+	return m_pXLServer->OpenExcelFile(szFileName, szSheetName, bCreate);
 }
 
 // Overloaded GetCellValue functions
