@@ -15,8 +15,26 @@
 #define IDC_EDIT_MID_HR                 1007
 #define IDC_EDIT_LOW_HR                 1008
 #define IDC_EDIT_INI_FUNDS              1009
-#define IDC_EDIT_AVG_PROJECT            1010
+#define IDC_EDIT_IN_PROBABILITY         1010
 #define IDC_BUTTON1                     1011
+#define IDC_EDIT_TECH_FEE               1012
+#define IDC_EDIT_HIG_COST               1013
+#define IDC_EDIT_MID_COST               1014
+#define IDC_EDIT_LOW_COST               1015
+#define IDC_EDIT_EX_PROBABILITY         1017
+#define IDC_EDIT_MAX_DURATION           1018
+#define IDC_EDIT_MIN_DURATION           1019
+#define IDC_EDIT_IN_PROBABILITY2        1022
+#define IDC_EDIT_MAX_MODE               1023
+#define IDC_EDIT_MIN_MODE               1024
+#define IDC_EDIT_PROFIT_RATE            1025
+#define IDC_EDIT_LIFE_CYCLE             1026
+#define IDC_EDIT_SIGMA0                 1027
+#define IDC_EDIT_MU0                    1028
+#define IDC_EDIT_SIGMA1                 1029
+#define IDC_EDIT_MU1                    1030
+#define IDC_EDIT_SIGMA2                 1031
+#define IDC_EDIT_MU2                    1032
 
 // Next default values for new objects
 // 

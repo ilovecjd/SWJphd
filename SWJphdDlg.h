@@ -68,4 +68,5 @@ public:
 	afx_msg void OnBnClickedBtnSaveFileName();
 	afx_msg void OnBnClickedBtnEnvLoad();
 	afx_msg void OnBnClickedButton1();
+	afx_msg void OnEnChangeEditMaxDuration();
 };

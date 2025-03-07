@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(CSWJphdDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_SAVE_FILE_NAME, &CSWJphdDlg::OnBnClickedBtnSaveFileName)
 	ON_BN_CLICKED(IDC_BTN_ENV_LOAD, &CSWJphdDlg::OnBnClickedBtnEnvLoad)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSWJphdDlg::OnBnClickedButton1)
+	ON_EN_CHANGE(IDC_EDIT_MAX_DURATION, &CSWJphdDlg::OnEnChangeEditMaxDuration)
 END_MESSAGE_MAP()
 
 
@@ -254,6 +255,10 @@ void CSWJphdDlg::OnBnClickedBtnSaveFileName()
 // 환경변수들을 엑셀파일에서 가져온다.
 void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 {
+	// 파일경로 업데이트
+	GetDlgItemText(IDC_EDIT_ENV_FILE_PATH, m_strEnvFilePath);
+	GetDlgItemText(IDC_EDIT_SAVE_FILE_PATH, m_strSaveFilePath);
+
 	if (m_strEnvFilePath.IsEmpty()) {
 		AfxMessageBox(_T("파일 경로가 설정되지 않았습니다."));
 		return;
@@ -296,29 +301,58 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.profitRate);	    i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu0Rate);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma0Rate);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu1Rate);		i++;
-	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu2Rate);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu1Rate);		i++;	
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma1Rate);		i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.mu2Rate);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.sigma2Rate);		i++;
 
 	// 엑셀 파일 닫기
 	xlAuto.ReleaseExcel();
 
 	// Global 환경 변수 업데이트
+	CString strTemp;
 	SetDlgItemInt(IDC_EDIT_SIM_PERIOD,	m_gEnv.simulationPeriod);
+	strTemp.Format(_T("%.2f"), m_gEnv.technicalFee);  //
+	SetDlgItemText(IDC_EDIT_TECH_FEE, strTemp);
+
 	SetDlgItemInt(IDC_EDIT_HIG_HR,		m_gEnv.higHrCount);
 	SetDlgItemInt(IDC_EDIT_MID_HR,		m_gEnv.midHrCount);
 	SetDlgItemInt(IDC_EDIT_LOW_HR,		m_gEnv.lowHrCount);
+
+	SetDlgItemInt(IDC_EDIT_HIG_COST, m_gEnv.higHrCost);
+	SetDlgItemInt(IDC_EDIT_MID_COST, m_gEnv.midHrCost);
+	SetDlgItemInt(IDC_EDIT_LOW_COST, m_gEnv.lowHrCost);
+
 	SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.initialFunds);
 
-	CString strTemp;
-	strTemp.Format(_T("%.2f"), m_gEnv.extPrjInTime);  //
-	SetDlgItemText(IDC_EDIT_AVG_PROJECT, strTemp);
+	strTemp.Format(_T("%.2f"), m_gEnv.extPrjInTime);
+	SetDlgItemText(IDC_EDIT_EX_PROBABILITY, strTemp);
+	strTemp.Format(_T("%.2f"), m_gEnv.intPrjInTime);
+	SetDlgItemText(IDC_EDIT_IN_PROBABILITY, strTemp);
 
-	//SetDlgItemInt(IDC_EDIT_AVG_PROJECT,	m_gEnv.avgWeeklyProjects,FALSE);
-	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.higHrCostRate);
-	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.midHrCostRate);
-	//SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.lowHrCostRate);
+	SetDlgItemInt(IDC_EDIT_MAX_DURATION, m_gEnv.maxDuration);
+	SetDlgItemInt(IDC_EDIT_MIN_DURATION, m_gEnv.minDuration);
+
+	SetDlgItemInt(IDC_EDIT_MAX_MODE, m_gEnv.maxMode);
+	SetDlgItemInt(IDC_EDIT_MIN_MODE, m_gEnv.minMode);
+	SetDlgItemInt(IDC_EDIT_LIFE_CYCLE, m_gEnv.lifeCycle);
+	strTemp.Format(_T("%.2f"), m_gEnv.profitRate);
+	SetDlgItemText(IDC_EDIT_PROFIT_RATE, strTemp);
+
+	SetDlgItemInt(IDC_EDIT_MU0, m_gEnv.mu0Rate);
+	SetDlgItemInt(IDC_EDIT_SIGMA0, m_gEnv.sigma0Rate);
+
+	strTemp.Format(_T("%.2f"), m_gEnv.mu1Rate);
+	SetDlgItemText(IDC_EDIT_MU1, strTemp);
+
+	strTemp.Format(_T("%.2f"), m_gEnv.sigma1Rate);
+	SetDlgItemText(IDC_EDIT_SIGMA1, strTemp);
+
+	strTemp.Format(_T("%.2f"), m_gEnv.mu2Rate);
+	SetDlgItemText(IDC_EDIT_MU2, strTemp);
+
+	strTemp.Format(_T("%.2f"), m_gEnv.sigma2Rate);
+	SetDlgItemText(IDC_EDIT_SIGMA2, strTemp);
 
 	m_pCreator.Init(m_strEnvFilePath, &m_gEnv);
 	PrintAllProject(&m_pCreator);
@@ -401,4 +435,14 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
     xlAuto.ReleaseExcel();
 
 
+}
+
+void CSWJphdDlg::OnEnChangeEditMaxDuration()
+{
+	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
+	// CDialogEx::OnInitDialog() 함수를 재지정 
+	//하고 마스크에 OR 연산하여 설정된 ENM_CHANGE 플래그를 지정하여 CRichEditCtrl().SetEventMask()를 호출하지 않으면
+	// 이 알림 메시지를 보내지 않습니다.
+
+	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
 }
