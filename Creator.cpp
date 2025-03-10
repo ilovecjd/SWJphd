@@ -15,18 +15,16 @@ CCreator::~CCreator()
 {
 }
 
-// 문제를 생성한다. 글로벌 환경에서 발생 할 수 있는 프로젝트들을 발생 시키고 파일로 저장한다.
 BOOL CCreator::Init(CString filePath, GLOBAL_ENV* pGlobalEnv)
 {
-    *(&m_gEnv) = *pGlobalEnv;
+	*(&m_gEnv) = *pGlobalEnv;
     m_strEnvFilePath = filePath;
 
-    m_pProjects.Resize(0, 150);
+	m_pProjects.Resize(0, 150);
     m_totalProjectNum = CreateAllProjects();
 
     return TRUE;
 }
-
 
 /*
 1) 월간 내부 프로젝트 발생 확율과 외부 프로젝트 발생 확율을 다르게 한다.
@@ -112,7 +110,7 @@ int CCreator::CreateProjects(int category, int Id, int time)
     Project.secondPayTime   = payTime2;
     Project.finalPayTime    = payTime3;
 
-    m_pProjects[0][Id] = Project;
+    m_pProjects[0][Id] = Project;// 여기가 맞는지, 함수 밖에서 하는게 맞는지 생각해 보자.
 
     return 0;
 }
@@ -175,6 +173,7 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
         tempMode.mu				= mu;       		// 수익의 평균(내부프로젝트만 의미를 가짐)
         tempMode.sigma			= sigma;
         tempMode.fixedIncome	= (int)(interRevenue / lifeCycle); // lifeCycle 동안 한 time에 얻는 수익
+        tempMode.isPossible     = TRUE;
 
         pProject->mode0 = tempMode;
 
@@ -192,6 +191,7 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
         tempMode.mu             = mu;
         tempMode.sigma          = sigma;
         tempMode.fixedIncome    = (int)(interRevenue / lifeCycle); // lifeCycle 동안 한 time에 얻는 수익
+        tempMode.isPossible     = TRUE;
 
         pProject->mode1			= tempMode;
 
@@ -209,6 +209,7 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
         tempMode.mu				= mu;
         tempMode.sigma			= sigma;
         tempMode.fixedIncome	= (int)(interRevenue / lifeCycle); // lifeCycle 동안 한 time에 얻는 수익
+        tempMode.isPossible     = TRUE;
 
         pProject->mode2			= tempMode;
     }

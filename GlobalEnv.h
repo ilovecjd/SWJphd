@@ -77,6 +77,7 @@ struct _MODE {
 	double mu;		    // 수익의 평균
 	double sigma;	    // 수익의 표준편차
     int fixedIncome;	// revenue x profitRate / lifeCycle, 완료후 매달 발생하는 수익
+	BOOL isPossible;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +91,7 @@ struct PROJECT {
 	int startTime;		// 프로젝트의 시작일
 	int endTime;		// 프로젝트 종료일
 
-	int revenue;		// 외부 프로젝트의 수주금액 or 0
+	int revenue;		// 외부 프로젝트의 수주금액 or 0 or 선택된 모드의 fixedIncome
 	int firstPay;		// 선금 액수
 	int secondPay;		// 2차 지급 액수
 	int finalPay;		// 3차 지급 액수
@@ -240,6 +241,13 @@ public:
 	int getCols() const {
 		if (!data.empty()) return (int)data[0].size();
 		return 0;
+	}
+
+	// 모든 요소를 입력값(value)으로 설정하는 함수
+	void Clear(int value) {
+		for (auto& row : data) {
+			std::fill(row.begin(), row.end(), value);  // 벡터 전체를 value로 채우기
+		}
 	}
 };
 

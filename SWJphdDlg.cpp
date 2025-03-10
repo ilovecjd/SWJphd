@@ -63,8 +63,7 @@ BEGIN_MESSAGE_MAP(CSWJphdDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_ENV_OPEN, &CSWJphdDlg::OnBnClickedBtnEnvOpen)
 	ON_BN_CLICKED(IDC_BTN_SAVE_FILE_NAME, &CSWJphdDlg::OnBnClickedBtnSaveFileName)
 	ON_BN_CLICKED(IDC_BTN_ENV_LOAD, &CSWJphdDlg::OnBnClickedBtnEnvLoad)
-	ON_BN_CLICKED(IDC_BUTTON1, &CSWJphdDlg::OnBnClickedButton1)
-	ON_EN_CHANGE(IDC_EDIT_MAX_DURATION, &CSWJphdDlg::OnEnChangeEditMaxDuration)
+	ON_BN_CLICKED(IDC_BUTTON1, &CSWJphdDlg::OnBnClickedButton1)	
 END_MESSAGE_MAP()
 
 
@@ -362,6 +361,27 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 void CSWJphdDlg::OnBnClickedButton1()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	// excel file write test code
+	CXLEzAutomation xlAuto;
+	LPOLESTR sheetsName[1] = { L"project"};
+	if (!xlAuto.OpenExcelFile(m_strSaveFilePath, sheetsName, 1))
+	{
+		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
+		return;
+	}
+
+#define _PRINT_WIDTH 35	
+	CString strTitle[1][_PRINT_WIDTH] = {
+			_T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),
+			_T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
+			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
+			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
+			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익")
+	};
+	xlAuto.WriteArrayToRange(0, 1, 1, (CString*)strTitle, _PRINT_WIDTH,1);
+
+	// 엑셀 파일 닫기
+	xlAuto.ReleaseExcel();
 
 }
 void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
@@ -433,16 +453,5 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
 
     // 엑셀 파일 닫기
     xlAuto.ReleaseExcel();
-
-
 }
 
-void CSWJphdDlg::OnEnChangeEditMaxDuration()
-{
-	// TODO:  RICHEDIT 컨트롤인 경우, 이 컨트롤은
-	// CDialogEx::OnInitDialog() 함수를 재지정 
-	//하고 마스크에 OR 연산하여 설정된 ENM_CHANGE 플래그를 지정하여 CRichEditCtrl().SetEventMask()를 호출하지 않으면
-	// 이 알림 메시지를 보내지 않습니다.
-
-	// TODO:  여기에 컨트롤 알림 처리기 코드를 추가합니다.
-}

@@ -48,6 +48,9 @@
     <ClInclude Include="Creator.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Company.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SWJphd.cpp">
@@ -72,6 +75,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Creator.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Company.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
