@@ -6,8 +6,8 @@
 
 CCompany::CCompany(GLOBAL_ENV* pEnv, CCreator* pCreator)
 {	
-	m_env				= *pEnv;
-	m_creator			= *pCreator;
+	m_env = *pEnv;
+	m_creator = *pCreator;
 }
 
 CCompany::~CCompany()
@@ -25,29 +25,37 @@ void CCompany::ClearMemory()
 //          테이블 초기화 (프로젝트, 인력, 비용, 수익)
 BOOL CCompany::Init()
 {   
-	// 오더테이블의 기간은 넉넉히 2배로 설정해 놓는다.
-	int maxWeeks = m_env.maxPeriod;
 
-	m_orderTable.Resize(2, maxWeeks);
-	m_doingHR.Resize(3, maxWeeks);
-	m_totalHR.Resize(3, maxWeeks);
-	m_freeHR.Resize(3, maxWeeks);
-	m_doingTable.Resize(5, maxWeeks); // 크기는 자동으로 늘어나는거 맞지??
-	m_incomeTable.Resize(1, maxWeeks);
-	m_expensesTable.Resize(1, maxWeeks);
-	m_balanceTable.Resize(1, maxWeeks);
+	// 오더테이블의 기간은 넉넉히 2배로 설정해 놓는다.
+	int maxTime = m_env.maxPeriod;
+
+	m_doingHR.Resize(3, maxTime);
+	m_totalHR.Resize(3, maxTime);
+	m_freeHR.Resize(3, maxTime);
+	m_doingTable.Resize(5, maxTime); // 크기는 자동으로 늘어나는거 맞지??
+	m_incomeTable.Resize(1, maxTime);
+	m_expensesTable.Resize(1, maxTime);
+	m_balanceTable.Resize(1, maxTime);
+
+
+
+	m_creator.m_pProjects;
+	m_creator.m_totalProjectNum;
+
+
+
 
 	// 매 시점 마다 필요한 비용
 	int expense = m_env.higHrCount * m_env.higHrCost + m_env.midHrCount * m_env.midHrCost + m_env.lowHrCount * m_env.lowHrCost;
 
 	m_doingHR.Clear(0);	// 일하는 사람도 없고
-	for (int i = 0; i < maxWeeks; i++)
+	for (int i = 0; i < maxTime; i++)
 	{
 		m_totalHR[HR_HIG][i] = m_freeHR[HR_HIG][i] = m_env.higHrCount;
 		m_totalHR[HR_MID][i] = m_freeHR[HR_MID][i] = m_env.midHrCount;
 		m_totalHR[HR_LOW][i] = m_freeHR[HR_LOW][i] = m_env.lowHrCount;
 	}
-
+	
 	m_expensesTable.Clear(expense);// 고정비용 나가고
 	m_doingTable.Clear(-1); // 하는일은 없고
 	m_incomeTable.Clear(0); // 들어올돈 없고
@@ -189,9 +197,9 @@ BOOL CCompany::IsEnoughHR(int thisTime, PROJECT* pProject)
 
 	for (int i = thisTime; i <= endTime; i++)
 	{
-		doingHR[HR_HIG][i] += pProject->mode0.higHrCount;
-		doingHR[HR_MID][i] += pProject->mode0.midHrCount;
-		doingHR[HR_LOW][i] += pProject->mode0.lowHrCount;
+		doingHR[HR_HIG][i]	+= pProject->mode0.higHrCount;
+		doingHR[HR_MID][i]	+= pProject->mode0.midHrCount;
+		doingHR[HR_LOW][i]	+= pProject->mode0.lowHrCount;
 	}
 
 	for (int i = thisTime; i < m_env.maxPeriod; i++)

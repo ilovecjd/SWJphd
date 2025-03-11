@@ -4,8 +4,6 @@
 #include "Creator.h"
 
 
-class CProject;
-
 
 class CCompany
 {
@@ -15,9 +13,7 @@ public:
 
 	GLOBAL_ENV	m_env;
 	CCreator	m_creator;
-	BOOL Init();	
-
-
+	BOOL Init();
 
 
 	void ClearMemory();
@@ -25,17 +21,11 @@ public:
 	BOOL Decision(int thisWeek);
 	int CalculateFinalResult();
 	int CalculateTotalInCome();		
-	void PrintCompanyResualt(CString strFileName, CString strOutSheetName);
-	//void write_CompanyInfo(Book* book, Sheet* sheet);
-		
+	//void PrintCompanyResualt(CString strFileName, CString strOutSheetName);
 	
 
-
-
-
 	int m_lastDecisionTime;
-		
-	//int m_recruitTerm; // 인원 충감을 계산하는 기간, 몇주마다 충원감원을 검사할지.
+	
 	
 private:
 	// 초기화 필요한 변수들
@@ -43,7 +33,7 @@ private:
 
 	//PROJECT* m_AllProjects = NULL;	
 
-	Dynamic2DArray m_orderTable;
+	
 
 	Dynamic2DArray m_totalHR;
 	Dynamic2DArray m_doingHR;

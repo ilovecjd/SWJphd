@@ -17,8 +17,9 @@ CCreator::~CCreator()
 
 BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv)
 {
-	*(&m_gEnv) = *pGlobalEnv;    
+	*(&m_env) = *pGlobalEnv;    
 
+    m_orderTable.Resize(2, m_env.maxPeriod);
 	m_pProjects.Resize(0, 150);
     m_totalProjectNum = CreateAllProjects();
 
@@ -31,26 +32,32 @@ BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv)
 */
 int CCreator::CreateAllProjects()
 {
-    int prjectId = 0;
+    int projectId    = 0;
+    int tempId   = 0;
 	//CreateProjects(INTERNAL_PRJ, prjectId++, 0);// 내부는 하나 가지고 시작한다.
 
-    for (int time = 0; time < m_gEnv.maxPeriod; time++)
+    for (int time   = 0; time < m_env.maxPeriod; time++)
     {
-        int newCnt = 0;
+        int newCnt  = 0;
+        
         //int newCnt = PoissonRandom(m_gEnv.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
         //for (int i = 0; i < newCnt; i++) // 내부 프로젝트 발생
         //{
         //    CreateProjects(INTERNAL_PRJ, prjectId++, time);
         //}
 
-        newCnt = PoissonRandom(m_gEnv.extPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
-        for (int i = 0; i < newCnt; i++) // 외부 프로젝트 발생
+        newCnt = PoissonRandom(m_env.extPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
+        for (int i  = 0; i < newCnt; i++) // 외부 프로젝트 발생
         {
-            CreateProjects(EXTERNAL_PRJ, prjectId++, time);
+            CreateProjects(EXTERNAL_PRJ, projectId++, time);
         }
+
+        m_orderTable[0][time]   = tempId;//누계
+        m_orderTable[1][time]   = projectId - tempId;//발주
+        tempId               = projectId;
     }
 
-    return prjectId;
+    return projectId;
 }
 
 int CCreator::CreateProjects(int category, int Id, int time)
@@ -61,9 +68,9 @@ int CCreator::CreateProjects(int category, int Id, int time)
     // 내부 외부에 따라서 최소 기간과 최대 기간이 차이가 있음.
     int duration = 0;
     if (EXTERNAL_PRJ == category)
-        duration = RandomBetween(m_gEnv.minDuration, m_gEnv.maxDuration);
+        duration = RandomBetween(m_env.minDuration, m_env.maxDuration);
     else
-        duration = RandomBetween(m_gEnv.minMode, m_gEnv.maxMode);
+        duration = RandomBetween(m_env.minMode, m_env.maxMode);
     
 
     MakeModeAndRevenue(&Project, duration, category);		    // mode 를 만들고 모드별로 인원을 계산한다. 
@@ -146,8 +153,8 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
     }
 
     //2. 프로젝트 수익(인건비x기간x기술료비율), mode0의 인력 기록
-    double expense      = (nHigh*m_gEnv.higHrCost +  nMid*m_gEnv.midHrCost + nLow*m_gEnv.lowHrCost) * duration;    
-    int revenue         = (int)(expense * m_gEnv.technicalFee); // 전체 이익은 기술료 비율만큼 크게
+    double expense      = (nHigh*m_env.higHrCost +  nMid*m_env.midHrCost + nLow*m_env.lowHrCost) * duration;    
+    int revenue         = (int)(expense * m_env.technicalFee); // 전체 이익은 기술료 비율만큼 크게
     pProject->revenue   = revenue;
     
     _MODE tempMode; //mode 0 
@@ -159,14 +166,14 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
     { 
         int lifeCycle, profitRate;
         double p, mu, sigma, interRevenue;
-        profitRate				= (int) m_gEnv.profitRate;
-        lifeCycle				= m_gEnv.lifeCycle;
+        profitRate				= (int) m_env.profitRate;
+        lifeCycle				= m_env.lifeCycle;
 		pProject->revenue		= 0; // 내부는 수익이 없다.
 
         //3. mode0를 위한 mu와 sigma, 수익 계산
         p						= static_cast<double>(rand()) / RAND_MAX;  // 0과 1 사이의 난수;
         mu						= revenue * profitRate;// 평균은 인건비 수준 x 이익율
-        sigma					= mu * m_gEnv.mu0Rate / m_gEnv.sigma0Rate;
+        sigma					= mu * m_env.mu0Rate / m_env.sigma0Rate;
         interRevenue			= InverseNormal(p, mu, sigma); // mode0의 전체수익, 언제나 0 이상으로 나옴
 
         tempMode.lifeCycle		= lifeCycle;
@@ -183,8 +190,8 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
         tempMode.lowHrCount     = nLow * 2;
 
         p                       = static_cast<double>(rand()) / RAND_MAX;  // 0과 1 사이의 난수
-        mu                      = mu * m_gEnv.mu1Rate;// mode1평균은 mode0의 mu1Rate수준
-        sigma                   = mu * m_gEnv.sigma1Rate; //mode1의 sigma는 mode의 sigma1Rate수준
+        mu                      = mu * m_env.mu1Rate;// mode1평균은 mode0의 mu1Rate수준
+        sigma                   = mu * m_env.sigma1Rate; //mode1의 sigma는 mode의 sigma1Rate수준
         interRevenue            = InverseNormal(p, mu, sigma);
 
         tempMode.lifeCycle      = lifeCycle;
@@ -201,8 +208,8 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
         tempMode.lowHrCount		= nLow * 4;
 
         p						= static_cast<double>(rand()) / RAND_MAX;  // 0과 1 사이의 난수
-        mu						= mu * m_gEnv.mu2Rate;// mode2평균은 mode1의 mu2Rate수준
-        sigma					= mu * m_gEnv.sigma2Rate; //mode2의 sigma는 mode1의 sigma2Rate수준
+        mu						= mu * m_env.mu2Rate;// mode2평균은 mode1의 mu2Rate수준
+        sigma					= mu * m_env.sigma2Rate; //mode2의 sigma는 mode1의 sigma2Rate수준
         interRevenue			= InverseNormal(p, mu, sigma);
 
         tempMode.lifeCycle		= lifeCycle;

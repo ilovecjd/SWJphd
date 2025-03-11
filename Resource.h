@@ -21,7 +21,6 @@
 #define IDC_EDIT_HIG_COST               1013
 #define IDC_EDIT_MID_COST               1014
 #define IDC_EDIT_LOW_COST               1015
-#define IDC_BUTTON2                     1016
 #define IDC_BTN_STEP_BY_STEP            1016
 #define IDC_EDIT_EX_PROBABILITY         1017
 #define IDC_EDIT_MAX_DURATION           1018

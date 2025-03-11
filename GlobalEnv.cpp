@@ -1,9 +1,158 @@
 ﻿
 #include "pch.h"
 #include "GlobalEnv.h"
+#include "XLEzAutomation.h"
+#include "Company.h"
+#include "Creator.h"
 
 #include <cmath>
 #include <stdexcept>
+
+
+
+
+void PrintProject(CXLEzAutomation* pSaveXl, int SheetNum, PROJECT* pProject)
+{
+    int posY    = pProject->ID;
+    int j       = 1;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->category);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->ID);				    j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->createTime);		    j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->startAbleTime);		j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->duration);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->startTime);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->endTime);		    j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->revenue);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->firstPay);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->secondPay);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->finalPay);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->firstPayTime);		j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->secondPayTime);		j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->finalPayTime);		j++;
+
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.higHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.midHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.lowHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.lifeCycle); 	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.mu);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.sigma);		j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.fixedIncome);	j++;
+
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode1.higHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode1.midHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode1.lowHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode1.lifeCycle); 	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode1.mu);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode1.sigma);	    j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode1.fixedIncome);	j++;
+
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode2.higHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode2.midHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode2.lowHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode2.lifeCycle);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode2.mu);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode2.sigma);		j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode2.fixedIncome);	j++;
+
+    return;
+}
+
+void PrintAllProject(CXLEzAutomation* pSaveXl, CCreator* pCreator, int thisTime)
+{
+
+
+
+}
+
+
+
+void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompany, int thisTime)
+{
+ 
+    PROJECT* pProject = NULL;
+
+    // 이 시점에서의 프로젝트 시작번호와 갯수
+    int startId     = pCreator->m_orderTable[0][thisTime];
+    int endId       = pCreator->m_orderTable[1][thisTime];
+
+    for (int i = startId; i < endId ;i++) {
+        pProject = &(pCreator->m_pProjects[0][i]);
+        PrintProject(pSaveXl, WS_NUM_PROJECT, pProject);
+    }
+    
+    //PrintBD();
+//    PrintGenv(pSaveXl, WS_NUM_GENV, pCreator, thisTime);
+ 
+    return;
+}
+
+
+void PrintBD(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime)
+{
+
+}
+
+void PrintGenv(CXLEzAutomation* pSaveXl,int sheet, CCreator* pCreator, int thisTime)
+{
+    GLOBAL_ENV* pEnv = &(pCreator->m_env);
+    int row = 0;
+    int col = 1;
+
+    pSaveXl->SetCellValue(sheet, 3, 1, _T("* 문제에 사용할 데이터를 생성한다."));
+    pSaveXl->SetCellValue(sheet, 4, 1, _T("* 생성하는 데이터를 위한 기초정보를 기록한다."));
+    pSaveXl->SetCellValue(sheet, 5, 1, _T("* 일자"));
+    pSaveXl->SetCellValue(sheet, 6, 1, _T("구분"));
+    pSaveXl->SetCellValue(sheet, 7, 1, _T("Global"));
+    pSaveXl->SetCellValue(sheet, 10,1, _T("기본환경"));
+    pSaveXl->SetCellValue(sheet, 17,1, _T("프로젝트생성정보"));
+    pSaveXl->SetCellValue(sheet, 22,1, _T("모드생성정보"));
+    pSaveXl->SetCellValue(sheet, 5, 2, _T("2025-03-07"));
+
+    row = 7;
+    col = 2;
+    
+    pSaveXl->SetCellValue(sheet, row, col++, _T("simulationPeriod")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->simulationPeriod); pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션의 기간(12개월 x 5년 = 60 개월)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("maxPeriod")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->maxPeriod); pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션 종료 이후의 값들도 추적하기 위해(simulationPeriod x 2)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("technicalFee")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->technicalFee); pSaveXl->SetCellValue(sheet, row, col++, _T("인건비대비 기술료율(총수익을 구할때 사용)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("higHrCount")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->higHrCount); pSaveXl->SetCellValue(sheet, row, col++, _T("최초에 보유한 고급 인력")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("midHrCount")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->midHrCount); pSaveXl->SetCellValue(sheet, row, col++, _T("최초에 보유한 중급 인력")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("lowHrCount")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->lowHrCount); pSaveXl->SetCellValue(sheet, row, col++, _T("최초에 보유한 초급 인력")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("higHrCost")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->higHrCost); pSaveXl->SetCellValue(sheet, row, col++, _T("고급자 인건비(기간당)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("midHrCost")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->midHrCost); pSaveXl->SetCellValue(sheet, row, col++, _T("중급자 인건비(기간당)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("lowHrCost")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->lowHrCost); pSaveXl->SetCellValue(sheet, row, col++, _T("초급자 인건비(기간당)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("initialFunds")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->initialFunds); pSaveXl->SetCellValue(sheet, row, col++, _T("최초 보유한 자금 ==> 6개월 유지비")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("extPrjInTime")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->extPrjInTime); pSaveXl->SetCellValue(sheet, row, col++, _T("기간내 발생하는 평균 발주 프로젝트 수(포아송분포로)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("intPrjInTime")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->intPrjInTime); pSaveXl->SetCellValue(sheet, row, col++, _T("기간내 발생하는 평균 내부 프로젝트 수(포아송분포로)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("minDuration")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->minDuration); pSaveXl->SetCellValue(sheet, row, col++, _T("외부 프로젝트 최소 기간")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("maxDuration")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->maxDuration); pSaveXl->SetCellValue(sheet, row, col++, _T("외부 프로젝트 최대 기간")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("durRule")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->durRule); pSaveXl->SetCellValue(sheet, row, col++, _T("외부 프로젝트 기간의 분포규칙 0:일양분포")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("minMode")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->minMode); pSaveXl->SetCellValue(sheet, row, col++, _T("mode 의 최소 기간")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("maxMode")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->maxMode); pSaveXl->SetCellValue(sheet, row, col++, _T("mode 의 최대 기간")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("lifeCycle")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->lifeCycle); pSaveXl->SetCellValue(sheet, row, col++, _T("제품의 라이프 사이클")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("profitRate")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->profitRate); pSaveXl->SetCellValue(sheet, row, col++, _T("mode0의 마진율(revenue 에 이값을 곱한다)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("mu0Rate")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->mu0Rate); pSaveXl->SetCellValue(sheet, row, col++, _T("sigma0 : mu0 = mu0Rate : sigma0Rate")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("sigma0Rate")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->sigma0Rate); pSaveXl->SetCellValue(sheet, row, col++, _T("sigma0 : mu0 = 80 : 20")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("mu1Rate")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->mu1Rate); pSaveXl->SetCellValue(sheet, row, col++, _T("mode0의 mu x mu1Rate = mode1의 mu")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("sigma1Rate")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->sigma1Rate); pSaveXl->SetCellValue(sheet, row, col++, _T("mode0의 sigma x sigma1Rate = mode1의 sigma")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("mu2Rate")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->mu2Rate); pSaveXl->SetCellValue(sheet, row, col++, _T("mode1의 mu x mu2Rate = mode2의 mu")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("sigma2Rate")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->sigma2Rate); pSaveXl->SetCellValue(sheet, row, col++, _T("mode1의 sigma x sigma2Rate = mode2의 sigma")); row++; col = 2;
+    
+}
+
+// 시트의 특정위치에 
+void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum  )
+{
+#define _PRINT_WIDTH 35	
+    CString strTitle[1][_PRINT_WIDTH] = {
+            _T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),
+            _T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
+            _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
+            _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
+            _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익")
+    };
+    pSaveXl->WriteArrayToRange(SheetNum, 1, 1, (CString*)strTitle, 1, _PRINT_WIDTH);
+
+}
 
 int PoissonRandom(double lambda) {
 	int k		= 0;

@@ -4,10 +4,37 @@
 #include <vector>
 #include <algorithm>
 
+
+#ifndef GLOBAL_ENV_H
+#define GLOBAL_ENV_H
+
+class CXLEzAutomation;
+class CCreator;
+class CCompany;
+
+void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompany, int thisTime);
+void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum);
+
+void PrintProject(CXLEzAutomation* pSaveXl, CCreator* pCreator, int thisTime);
+void PrintBD(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime);
+void PrintGenv(CXLEzAutomation* pSaveXl, int sheet,CCreator* pCreator, int thisTime);
+
+#endif // GLOBAL_ENV_H
+
 #define MAX_CANDIDATES 50
 
 #define EXTERNAL_PRJ	0
 #define INTERNAL_PRJ	1
+
+
+// Sheet enumeration for easy reference
+enum SheetName {
+	WS_NUM_GENV = 0,
+	WS_NUM_DASHBOARD,
+	WS_NUM_PROJECT,
+	WS_NUM_DEBUG_INFO,
+	WS_TOTAL_SHEET_COUNT // Total number of sheets
+};
 
 // Order Tabe index for easy reference
 enum OrderIndex {
@@ -259,6 +286,8 @@ int RandomBetween(int low, int high);
 
 // 일반 정규분포의 역함수 p: (0,1) 사이의 확률값 mu: 평균, sigma: 표준편차
 double InverseNormal(double p, double mu, double sigma);
+
+
 
 /*
 일자 	2025-03-03						

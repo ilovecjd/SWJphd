@@ -11,17 +11,9 @@
 #include "afxdialogex.h"
 #include "XLEzAutomation.h"
 
-// Sheet enumeration for easy reference
-enum SheetName {
-	WS_NUM_GENV = 0,
-	WS_NUM_DASHBOARD,
-	WS_NUM_PROJECT,
-	WS_NUM_ACTIVITY_STRUCT,
-	WS_NUM_DEBUG_INFO,
-	WS_TOTAL_SHEET_COUNT // Total number of sheets
-};
 
-LPOLESTR gSheetsName[WS_TOTAL_SHEET_COUNT] = { L"GlobalEnv", L"dashboard", L"project", L"activity_struct",L"Debug_info" };
+LPOLESTR gSaveSheets[WS_TOTAL_SHEET_COUNT] = { L"GlobalEnv", L"dashboard", L"project", L"Debug_info" };
+
 
 
 #ifdef _DEBUG
@@ -86,6 +78,10 @@ BOOL CSWJphdDlg::OnInitDialog()
 	m_pSaveXl		= NULL;
 	m_pCompany		= NULL;
 	m_stepByStepCnt	= -1;
+	
+	// 버튼 비활성화
+	GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTON1)->EnableWindow(FALSE);
 
 	// 컨트롤 변수와 연결
 	m_editEnvFilePath.SubclassDlgItem(IDC_EDIT_ENV_FILE_PATH, this);
@@ -265,7 +261,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	GetDlgItemText(IDC_EDIT_SAVE_FILE_PATH, m_strSaveFilePath);
 
 	if (m_strEnvFilePath.IsEmpty()) {
-		AfxMessageBox(_T("파일 경로가 설정되지 않았습니다."));
+		AfxMessageBox(_T("환경변수 파일 경로가 설정되지 않았습니다."));
 		return;
 	}
 
@@ -274,7 +270,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	//if (!xlAuto.OpenExcelFile(m_strEnvFilePath, gSheetsName, WS_TOTAL_SHEET_COUNT)) {
 	CString strSheet = _T("GlobalEnv");
 	if (!xlAuto.OpenExcelFile(m_strEnvFilePath, strSheet, FALSE)) {
-		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
+		AfxMessageBox(_T("환경변수 파일을 열수 없습니다."));
 		return ;
 	}
 
@@ -359,6 +355,9 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	strTemp.Format(_T("%.2f"), m_gEnv.sigma2Rate);
 	SetDlgItemText(IDC_EDIT_SIGMA2, strTemp);
 
+	// 버튼 활성화
+	GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(TRUE);
+	//GetDlgItem(IDC_BUTTON1)->EnableWindow(FALSE);
 	
 	//PrintAllProject(&m_pCreator);
 
@@ -480,7 +479,10 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 			m_pSaveXl = NULL;
 		}
 		m_pSaveXl = new CXLEzAutomation;
-		m_pSaveXl->OpenExcelFile(m_strSaveFilePath,_T("project"),TRUE);
+		if (!m_pSaveXl->CreateExcelFile(m_strSaveFilePath, gSaveSheets, WS_TOTAL_SHEET_COUNT))
+		{
+			return;
+		}
 				
 		if (NULL != m_pCreator)
 		{
@@ -497,9 +499,12 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 			m_pCompany = NULL;
 		}
 		m_pCompany = new CCompany(&m_gEnv, m_pCreator);
-		m_pCompany->Init();
+		m_pCompany->Init();		
 
-		
+		//m_pSaveXl->OpenExcelFile(m_strSaveFilePath,_T("project"),TRUE);
+		m_pSaveXl->ClearSheetContents(0);
+		PrintProjectSheetHeader(m_pSaveXl, WS_NUM_PROJECT);
+		PrintGenv(pSaveXl, WS_NUM_GENV, pCreator, thisTime);
 	}
 
 	// 기간이 다 될때 까지
@@ -511,7 +516,9 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 			//AfxMessageBox();
 		}
 	}
-	m_stepByStepCnt ++;
+
 	// 진행한 한주간의 정보 기록
-	//PrintCompanyResualt(strFileName, strOutSheetName);
+	PrintOneTime(m_pSaveXl, m_pCreator, m_pCompany, m_stepByStepCnt);
+
+	m_stepByStepCnt ++;
 }

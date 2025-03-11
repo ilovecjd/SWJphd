@@ -89,6 +89,8 @@ public:
 	BOOL AddNewSheet(CString sheetName);
 
 	BOOL SaveAndCloseExcelFile(CString szFileName);
+	BOOL ClearSheetContents(int sheet);
+	BOOL CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
 	// 자동화 헬퍼 함수
 	//song
 
@@ -120,6 +122,8 @@ protected:
 
 	BOOL StartExcel();
 	BOOL CXLAutomation::FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetName);
+	
+
 };
 
 #endif // !defined(AFX_XLAUTOMATION_H__E020CE95_7428_4BEF_A24C_48CE9323C450__INCLUDED_)

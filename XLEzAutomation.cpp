@@ -194,3 +194,13 @@ BOOL CXLEzAutomation::SaveAndCloseExcelFile(CString szFileName)
 {
 	return m_pXLServer->SaveAndCloseExcelFile(szFileName);
 }
+
+BOOL CXLEzAutomation::ClearSheetContents(int sheet)
+{
+	return m_pXLServer->ClearSheetContents(sheet);
+}
+
+BOOL CXLEzAutomation::CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount)
+{
+	return m_pXLServer->CreateExcelFile(szFileName, sheetsName, nSheetCount);
+}

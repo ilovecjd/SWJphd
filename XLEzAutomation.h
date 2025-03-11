@@ -50,6 +50,9 @@ public:
 	BOOL ExportCString(int sheet, CString szDataCollection);
 
 	BOOL SaveAndCloseExcelFile(CString szFileName);
+	BOOL ClearSheetContents(int sheet);
+
+	BOOL CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
 
 	CXLEzAutomation();
 	CXLEzAutomation(BOOL bVisible);

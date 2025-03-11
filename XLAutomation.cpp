@@ -2229,6 +2229,96 @@ BOOL CXLAutomation::SaveAndCloseExcelFile(CString szFileName) {
 //	return TRUE;
 //}
 
+BOOL CXLAutomation::ClearSheetContents(int sheet)
+{
+	// sheet 인덱스 검사
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargCells;
+	VariantInit(&vargCells);
+
+	// 해당 시트의 Cells 속성을 가져와 전체 셀 범위를 선택
+	ClearAllArgs();
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargCells, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 가져온 범위에 대해 ClearContents 메서드를 호출하여 내용을 지움
+	ClearAllArgs();
+	BOOL result = ExlInvoke(vargCells.pdispVal, L"ClearContents", NULL, DISPATCH_METHOD, 0);
+
+	// 사용한 VARIANT 해제
+	VariantClear(&vargCells);
+	return result;
+}
+
+
+BOOL CXLAutomation::CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount)
+{
+	// Excel 애플리케이션과 파일명이 유효한지 확인
+	if (m_pdispExcelApp == NULL)
+		return FALSE;
+	if (szFileName.IsEmpty())
+		return FALSE;
+
+	// 파일 존재 여부 확인
+	CFileFind fileFinder;
+	BOOL fileExists = fileFinder.FindFile(szFileName);
+
+	VARIANTARG varg1, vargWorkbook;
+	ClearAllArgs();
+	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
+		return FALSE;
+
+	if (fileExists) {
+		// 파일이 존재하면 기존 파일 열기
+		ClearAllArgs();
+		AddArgumentCString(L"Filename", 0, szFileName);
+		if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+	}
+	else {
+		// 파일이 없으면 새 워크북 생성
+		ClearAllArgs();
+		if (!ExlInvoke(varg1.pdispVal, L"Add", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+
+		// 파일 확장자에 따라 FileFormat 결정 (.xlsx:51, .xlsm:52, 그 외: xlNormal=-4143)
+		CString ext = szFileName.Right(5);
+		ext.MakeLower();
+		int fileFormat = -4143; // 기본: XLS (Excel 97-2003)
+		if (ext == _T(".xlsx"))
+			fileFormat = 51;      // Excel Open XML Workbook
+		else if (ext == _T(".xlsm"))
+			fileFormat = 52;      // Excel Macro-Enabled Workbook
+
+		ClearAllArgs();
+		AddArgumentCString(L"Filename", 0, szFileName);
+		AddArgumentInt2(L"FileFormat", 0, fileFormat);
+		if (!ExlInvoke(vargWorkbook.pdispVal, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS))
+			return FALSE;
+	}
+
+	m_pdispWorkbook = vargWorkbook.pdispVal;
+
+	// for each 지정된 시트 이름에 대해
+	for (int i = 0; i < nSheetCount; i++) {
+		// FindAndStoreWorksheet()는 시트를 찾으면 vector에 push_back 하도록 구현됨.
+		if (!FindAndStoreWorksheet(m_pdispWorkbook, sheetsName[i])) {
+			// 해당 시트가 없으면 새 시트를 추가
+			if (!AddNewSheet(CString(sheetsName[i]))) {
+				MessageBox(NULL, _T("Worksheet not found and failed to add new sheet."), _T("Error"), MB_OK | MB_ICONERROR);
+				return FALSE;
+			}
+			// 새로 추가한 시트를 다시 찾음 (vector에 추가)
+			if (!FindAndStoreWorksheet(m_pdispWorkbook, sheetsName[i])) {
+				MessageBox(NULL, _T("Failed to find the newly added worksheet."), _T("Error"), MB_OK | MB_ICONERROR);
+				return FALSE;
+			}
+		}
+	}
+	return TRUE;
+}
 
 
 /*GetRange  호출 파라미터 일관성:
