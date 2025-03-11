@@ -19,7 +19,9 @@ void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum);
 void PrintOneProject(CXLEzAutomation* pSaveXl, CCreator* pCreator, int thisTime);
 void PrintOneDashBoard(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime);
 void PrintGenv(CXLEzAutomation* pSaveXl, int sheet,CCreator* pCreator);
+
 void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum);
+void PrintDashBoard(CXLEzAutomation* pSaveXl, int sheet, CCompany* pCompany, CCreator* pCreator, int thisTime);
 
 #endif // GLOBAL_ENV_H
 

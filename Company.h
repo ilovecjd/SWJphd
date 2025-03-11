@@ -13,8 +13,20 @@ public:
 
 	GLOBAL_ENV	m_env;
 	CCreator	m_creator;
-	BOOL Init();
 
+	Dynamic2DArray m_totalHR;
+	Dynamic2DArray m_doingHR;
+	Dynamic2DArray m_freeHR;
+
+	Dynamic2DArray m_doingTable;
+	//Dynamic2DArray m_doneTable;
+	//Dynamic2DArray m_defferTable;
+
+	Dynamic2DArray m_incomeTable;
+	Dynamic2DArray m_expensesTable;
+	Dynamic2DArray m_balanceTable;
+
+	BOOL Init();
 
 	void ClearMemory();
 		
@@ -35,20 +47,7 @@ private:
 
 	
 
-	Dynamic2DArray m_totalHR;
-	Dynamic2DArray m_doingHR;
-	Dynamic2DArray m_freeHR;
 	
-
-	Dynamic2DArray m_doingTable;
-	//Dynamic2DArray m_doneTable;
-	//Dynamic2DArray m_defferTable;
-		
-	Dynamic2DArray m_incomeTable;
-	Dynamic2DArray m_expensesTable;
-	Dynamic2DArray m_balanceTable;
-
-	//Dynamic2DArray m_MissingTable;
 		
 	BOOL CheckLastWeek(int thisWeek);
 	void SelectCandidates(int thisWeek);

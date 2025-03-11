@@ -80,28 +80,76 @@ void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompa
         PrintOneProject(pSaveXl, WS_NUM_PROJECT, pProject);
     }
     
-    //PrintOneDashBoard();
+    PrintDashBoard(pSaveXl, WS_NUM_DASHBOARD, pCompany, pCreator, thisTime);
  
     return;
 }
 
 
-void PrintDashBoard(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime)
+void PrintDashBoard(CXLEzAutomation* pSaveXl,int sheet, CCompany* pCompany, CCreator* pCreator, int thisTime)
 {
+    int posY = 2;
+    int posX = thisTime;
+
+    // 이번 기간까지 발생누계, 이번기간 발생    
+    pSaveXl->SetCellValue(sheet, posY, posX, thisTime); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCreator->m_orderTable[0][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCreator->m_orderTable[1][thisTime]); posY++;
+
+    // 총인원
+    posY = 7;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_totalHR[HR_HIG][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_totalHR[HR_MID][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_totalHR[HR_LOW][thisTime]); posY++;
+
+    // 투입인원
+    posY = 12;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_doingHR[HR_HIG][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_doingHR[HR_MID][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_doingHR[HR_LOW][thisTime]); posY++;
+    
+    // 여유인원
+    posY = 17;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[HR_HIG][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[HR_MID][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[HR_LOW][thisTime]); posY++;
+
+    // 진행프로젝트/모드
+    //int doingProjects = pCompany->m_doingTable[ORDER_SUM][thisTime];
+    //pCompany->m_doingTable;
+
+    //posY = 21;
+    //for (int i = 0; i < doingProjects ; i++) // 
+    //{
+    //    ID = pCompany->m_doingTable[i][thisTime];
+    //    PROJECT* pProject = ;
+    //    pProject->selectMode;
+
+    //}
+    //pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[][thisTime]); posY++;
+
+    // 수입, 지출, 차액
+    posY = 27;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_incomeTable[0] [thisTime] ); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_expensesTable[0] [thisTime] ); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_balanceTable[0][thisTime]); posY++;
+  
 
 }
 
 void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum)
 {
     CString strTitle[] = {
-            _T("주"),_T("누계"),_T("발주"),_T("1")
-          /*  _T("투입"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T("1"),
-            _T("여유"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T("1"),
-            _T("총원"),_T("HR_H"),_T("HR_M"),_T("HR_L")*/
+            _T("주"),_T("누계"),_T("발주"),_T(""),
+            _T("총원"),_T("HR_H"),_T("HR_M"),_T("HR_L"),
+            _T("투입"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T(""),
+            _T("여유"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T(""),
+            _T("진행"),_T(""),_T(""),_T(""),_T(""),_T(""),_T(""),
+            _T("수입"),_T("지출"),_T("차액"),
     };
 
     int nPrintWidth = sizeof(strTitle) / sizeof(strTitle[0]);
-    pSaveXl->WriteArrayToRange(SheetNum, 2, 2, strTitle, 1, nPrintWidth);
+    pSaveXl->WriteArrayToRange(SheetNum, 2, 1, strTitle, nPrintWidth,1);
 }
 
 
