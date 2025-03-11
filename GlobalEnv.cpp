@@ -11,7 +11,7 @@
 
 
 
-void PrintProject(CXLEzAutomation* pSaveXl, int SheetNum, PROJECT* pProject)
+void PrintOneProject(CXLEzAutomation* pSaveXl, int SheetNum, PROJECT* pProject)
 {
     int posY    = pProject->ID;
     int j       = 1;
@@ -77,22 +77,35 @@ void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompa
 
     for (int i = startId; i < endId ;i++) {
         pProject = &(pCreator->m_pProjects[0][i]);
-        PrintProject(pSaveXl, WS_NUM_PROJECT, pProject);
+        PrintOneProject(pSaveXl, WS_NUM_PROJECT, pProject);
     }
     
-    //PrintBD();
-//    PrintGenv(pSaveXl, WS_NUM_GENV, pCreator, thisTime);
+    //PrintOneDashBoard();
  
     return;
 }
 
 
-void PrintBD(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime)
+void PrintDashBoard(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime)
 {
 
 }
 
-void PrintGenv(CXLEzAutomation* pSaveXl,int sheet, CCreator* pCreator, int thisTime)
+void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum)
+{
+    CString strTitle[] = {
+            _T("주"),_T("누계"),_T("발주"),_T("1")
+          /*  _T("투입"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T("1"),
+            _T("여유"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T("1"),
+            _T("총원"),_T("HR_H"),_T("HR_M"),_T("HR_L")*/
+    };
+
+    int nPrintWidth = sizeof(strTitle) / sizeof(strTitle[0]);
+    pSaveXl->WriteArrayToRange(SheetNum, 2, 2, strTitle, 1, nPrintWidth);
+}
+
+
+void PrintGenv(CXLEzAutomation* pSaveXl,int sheet, CCreator* pCreator )
 {
     GLOBAL_ENV* pEnv = &(pCreator->m_env);
     int row = 0;
@@ -142,15 +155,18 @@ void PrintGenv(CXLEzAutomation* pSaveXl,int sheet, CCreator* pCreator, int thisT
 // 시트의 특정위치에 
 void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum  )
 {
-#define _PRINT_WIDTH 35	
-    CString strTitle[1][_PRINT_WIDTH] = {
+//#define _PRINT_WIDTH 35	
+    CString strTitle[] = {
             _T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),
             _T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
             _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
             _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
             _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익")
     };
-    pSaveXl->WriteArrayToRange(SheetNum, 1, 1, (CString*)strTitle, 1, _PRINT_WIDTH);
+
+    int nPrintWidth = sizeof(strTitle) / sizeof(strTitle[0]);
+
+    pSaveXl->WriteArrayToRange(SheetNum, 1, 1, (CString*)strTitle, 1, nPrintWidth);
 
 }
 

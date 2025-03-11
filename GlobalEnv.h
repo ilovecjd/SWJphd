@@ -13,11 +13,13 @@ class CCreator;
 class CCompany;
 
 void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompany, int thisTime);
+
 void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum);
 
-void PrintProject(CXLEzAutomation* pSaveXl, CCreator* pCreator, int thisTime);
-void PrintBD(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime);
-void PrintGenv(CXLEzAutomation* pSaveXl, int sheet,CCreator* pCreator, int thisTime);
+void PrintOneProject(CXLEzAutomation* pSaveXl, CCreator* pCreator, int thisTime);
+void PrintOneDashBoard(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime);
+void PrintGenv(CXLEzAutomation* pSaveXl, int sheet,CCreator* pCreator);
+void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum);
 
 #endif // GLOBAL_ENV_H
 

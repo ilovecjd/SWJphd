@@ -502,9 +502,11 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 		m_pCompany->Init();		
 
 		//m_pSaveXl->OpenExcelFile(m_strSaveFilePath,_T("project"),TRUE);
-		m_pSaveXl->ClearSheetContents(0);
+		m_pSaveXl->ClearSheetContents(WS_NUM_PROJECT);
 		PrintProjectSheetHeader(m_pSaveXl, WS_NUM_PROJECT);
-		PrintGenv(pSaveXl, WS_NUM_GENV, pCreator, thisTime);
+		m_pSaveXl->ClearSheetContents(WS_NUM_DASHBOARD);
+		PrintDBoardHeader(m_pSaveXl, WS_NUM_DASHBOARD);
+		PrintGenv(m_pSaveXl, WS_NUM_GENV, m_pCreator);
 	}
 
 	// 기간이 다 될때 까지

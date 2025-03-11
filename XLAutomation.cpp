@@ -600,7 +600,6 @@ BOOL CXLAutomation::AddArgumentCStringArray(LPOLESTR lpszArgName, WORD wFlags, L
 }
 
 
-
 //Clean up: release dipatches
 void CXLAutomation::ReleaseDispatch()
 {
@@ -765,7 +764,6 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName, LPOLESTR sheetsName[], int
 	return TRUE;
 }
 
-
 BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName, BOOL bCreate)
 {
 	// Excel 애플리케이션이나 파일명이 없으면 실패
@@ -841,107 +839,6 @@ BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName, BOOL
 	return TRUE;
 }
 
-//Open Microsoft Excel file and switch to the firs available worksheet. 
-//BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName, BOOL bCreate) {
-//	// Leave if the file cannot be opened
-//	if (NULL == m_pdispExcelApp)
-//		return FALSE;
-//	if (szFileName.IsEmpty())
-//		return FALSE;
-//
-//	// Check if the file exists
-//	CFileFind fileFinder;
-//	BOOL fileExists = fileFinder.FindFile(szFileName);
-//
-//	VARIANTARG varg1, vargWorkbook;
-//	ClearAllArgs();
-//	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
-//		return FALSE;
-//
-//	if (fileExists) {
-//		// If the file exists, open it
-//		ClearAllArgs();
-//		AddArgumentCString(L"Filename", 0, szFileName);
-//		if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
-//			return FALSE;
-//	}
-//	else {
-//		// 파일이 존재하지 않고, 생성 허용(bCreate==TRUE)하지 않으면 실패
-//		if (!bCreate) {
-//			MessageBox(NULL, _T("File not found."), _T("Error"), MB_OK | MB_ICONERROR);
-//			return FALSE;
-//		}
-//		// If the file doesn't exist, create a new workbook and save it
-//		ClearAllArgs();
-//		if (!ExlInvoke(varg1.pdispVal, L"Add", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
-//			return FALSE;
-//
-//		// Save the newly created workbook with the provided file name
-//		ClearAllArgs();
-//		AddArgumentCString(L"Filename", 0, szFileName);
-//		if (!ExlInvoke(vargWorkbook.pdispVal, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS))
-//			return FALSE;
-//	}
-//
-//	m_pdispWorkbook = vargWorkbook.pdispVal;
-//
-//	// Add new sheet if specified
-//	AddNewSheet(strSheetName);
-//
-//	BSTR b = strSheetName.AllocSysString();
-//
-//	//[수정 필요]
-//   // m_pdispWorksheets가 vector이므로, 특정 인덱스(예: WS_NUM_DEBUG_INFO)에 접근하기 전에 vector 크기를 확인 및 resize 해야 함
-//	//if (m_pdispWorksheets.size() <= WS_NUM_DEBUG_INFO)
-//		//m_pdispWorksheets.resize(WS_NUM_DEBUG_INFO + 1, NULL);
-//
-//	// 기존에는 FindAndStoreWorksheet를 세 개의 매개변수 버전으로 호출하였는데,
-//	// vector 방식에 맞춰 해당 함수를 오버로드하거나 별도로 구현해야 함.
-//	// 예를 들어, 아래와 같이 수정할 수 있습니다.
-//	// Find and store the newly added sheet
-//	if (!FindAndStoreWorksheet(m_pdispWorkbook, b)) {
-//		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
-//		return FALSE;
-//	}
-//
-//	return TRUE;
-//}
-
-//BOOL CXLAutomation::OpenExcelFile(CString szFileName, CString strSheetName) {
-//	// Leave if the file cannot be opened
-//	if (NULL == m_pdispExcelApp)
-//		return FALSE;
-//	if (szFileName.IsEmpty())
-//		return FALSE;
-//
-//	VARIANTARG varg1, vargWorkbook;
-//	ClearAllArgs();
-//	if (!ExlInvoke(m_pdispExcelApp, L"Workbooks", &varg1, DISPATCH_PROPERTYGET, 0))
-//		return FALSE;
-//
-//	ClearAllArgs();
-//	AddArgumentCString(L"Filename", 0, szFileName);
-//	if (!ExlInvoke(varg1.pdispVal, L"Open", &vargWorkbook, DISPATCH_METHOD, DISP_FREEARGS))
-//		return FALSE;
-//
-//	m_pdispWorkbook = vargWorkbook.pdispVal;
-//
-//	AddNewSheet(strSheetName);
-//
-//	BSTR b;
-//	b = strSheetName.AllocSysString();
-//
-//	if (!FindAndStoreWorksheet(m_pdispWorkbook, b, &m_pdispWorksheets[WS_NUM_DEBUG_INFO])) {
-//		// Error handling if a sheet is not found
-//		MessageBox(NULL, _T("Worksheet not found."), _T("Error"), MB_OK | MB_ICONSTOP);
-//		return FALSE;
-//	}
-//	
-//
-//	return TRUE;
-//}
-
-
 BOOL CXLAutomation::AddNewSheet(CString sheetName)
 {
 	if (m_pdispExcelApp == NULL || m_pdispWorkbook == NULL)
@@ -1001,7 +898,6 @@ BOOL CXLAutomation::FindAndStoreWorksheet(IDispatch* pWorkbook, LPOLESTR sheetNa
 	return TRUE;
 }
 
-
 BOOL CXLAutomation::GetRange(int sheet, int startRow, int startCol, int endRow, int endCol, VARIANTARG* pRange)
 {
 	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
@@ -1040,7 +936,6 @@ BOOL CXLAutomation::GetRange(int sheet, int startRow, int startCol, int endRow, 
 	return result;
 }
 
-
 BOOL CXLAutomation::ReadRangeToArray(int sheet, int startRow, int startCol, int endRow, int endCol, int* dataArray, int rows, int cols)
 {
 	VARIANTARG vargRng, vargData;
@@ -1076,34 +971,29 @@ BOOL CXLAutomation::ReadRangeToArray(int sheet, int startRow, int startCol, int 
 	SafeArrayGetUBound(pSafeArray, 2, &lColUBound);
 
 	
-	/*for (LONG r = lRowLBound; r <= lRowUBound; r++)
-	{*/
-		//for (LONG c = lColLBound; c <= lColUBound; c++)		
-		ULONG lLoop = (lRowUBound- lRowLBound+1) * (lColUBound - lColLBound + 1);
-		for (ULONG c = 0; c <= lLoop ; c++)
-		{
-//			LONG index[2] = { r, c };
-			VARIANT* pVarCell = &pVarData[c];
+	ULONG lLoop = (lRowUBound- lRowLBound+1) * (lColUBound - lColLBound + 1);
+	for (ULONG c = 0; c <= lLoop ; c++)
+	{
+		VARIANT* pVarCell = &pVarData[c];
 
-			// 데이터 타입에 따라 처리
-			if (pVarCell->vt == VT_I4) // Integer
-			{
-				*(dataArray + c) = pVarCell->lVal;
-			}
-			else if (pVarCell->vt == VT_R8) // Double, in case of float numbers
-			{
-				*(dataArray + c) = (int)pVarCell->dblVal;
-			}
-			else if (pVarCell->vt == VT_BSTR) // String, if needed to handle
-			{
-				// 문자열을 정수로 변환하거나 필요에 따라 처리할 수 있습니다.
-			}
-			else if (pVarCell->vt == VT_EMPTY) // Empty cell
-			{
-				*(dataArray + c) = 0; // Or any default value
-			}
+		// 데이터 타입에 따라 처리
+		if (pVarCell->vt == VT_I4) // Integer
+		{
+			*(dataArray + c) = pVarCell->lVal;
 		}
-	//}
+		else if (pVarCell->vt == VT_R8) // Double, in case of float numbers
+		{
+			*(dataArray + c) = (int)pVarCell->dblVal;
+		}
+		else if (pVarCell->vt == VT_BSTR) // String, if needed to handle
+		{
+			// 문자열을 정수로 변환하거나 필요에 따라 처리할 수 있습니다.
+		}
+		else if (pVarCell->vt == VT_EMPTY) // Empty cell
+		{
+			*(dataArray + c) = 0; // Or any default value
+		}
+	}
 
 	SafeArrayUnaccessData(pSafeArray);
 	VariantClear(&vargRng);
@@ -1366,8 +1256,8 @@ BOOL CXLAutomation::ReadRangeToIntArray(int sheet, int startRow, int startCol, i
 	VariantInit(&vargRng);
 	VariantInit(&vargData);
 
-	// Get the range from Excel
-	if (!GetRange(sheet, startRow, startCol, rows, startCol + cols - 1, &vargRng)) {
+	// Get the range from Excel	
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -1532,11 +1422,13 @@ BOOL CXLAutomation::WriteArrayToRangeInt(int sheet, int startRow, int startCol, 
 	VARIANTARG vargRng;
 	VariantInit(&vargRng);
 
-	// Set the Excel range using the GetRange function
-	if (!GetRange(sheet, startRow, startCol, rows, cols, &vargRng)) {
+	// Set the Excel range using the GetRange function	
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
+
+
 
 	// Create a SAFEARRAY for the data
 	SAFEARRAYBOUND sab[2];
@@ -1670,11 +1562,6 @@ BOOL CXLAutomation::WriteArrayToRangeCString(int sheet, int startRow, int startC
 }
 
 
-
-//song if (!GetRange(sheet, startRow, startCol, rows, cols , &vargRng)) 부분이 맞는지 확인 바람. 
-/*위 GetRange 호출도 다른 함수들과 마찬가지로, 만약 rows와 cols가 범위의 크기라면
-startRow + rows - 1, startCol + cols - 1
-로 전달하는 것이 일관성을 유지하는 데 좋습니다.*/
 BOOL CXLAutomation::WriteArrayToRangeVariant(int sheet, int startRow, int startCol, VARIANT* dataArray, int rows, int cols) {
 	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
 		return FALSE;
@@ -1683,7 +1570,7 @@ BOOL CXLAutomation::WriteArrayToRangeVariant(int sheet, int startRow, int startC
 	VariantInit(&vargRng);
 
 	// Set the Excel range using the GetRange function
-	if (!GetRange(sheet, startRow, startCol, rows, cols , &vargRng)) {
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -2048,8 +1935,8 @@ BOOL CXLAutomation::ReadExRangeConvertInt(int sheet, int startRow, int startCol,
 	VariantInit(&vargRng);
 	VariantInit(&vargData);
 
-	// Get the range from Excel
-	if (!GetRange(sheet, startRow, startCol, rows, cols, &vargRng)) {
+	// Get the range from Excel	
+	if (!GetRange(sheet, startRow, startCol, startRow + rows - 1, startCol + cols - 1, &vargRng)) {
 		MessageBox(NULL, _T("Failed to get Excel range."), _T("Error"), MB_OK | MB_ICONERROR);
 		return FALSE;
 	}
@@ -2180,55 +2067,6 @@ BOOL CXLAutomation::SaveAndCloseExcelFile(CString szFileName) {
 	return TRUE;
 }
 
-
-//
-//BOOL CXLAutomation::SaveAndCloseExcelFile(CString szFileName) {
-//	if (m_pdispWorkbook == NULL) {
-//		MessageBox(NULL, _T("No open workbook to save."), _T("Error"), MB_OK | MB_ICONERROR);
-//		return FALSE;
-//	}
-//
-//	// Save the workbook
-//	VARIANTARG vargFilename;
-//	VariantInit(&vargFilename);
-//	vargFilename.vt = VT_BSTR;
-//	vargFilename.bstrVal = szFileName.AllocSysString();
-//
-//	ClearAllArgs();
-//	AddArgumentOLEString(L"Filename", 0, vargFilename.bstrVal);
-//	if (!ExlInvoke(m_pdispWorkbook, L"SaveAs", NULL, DISPATCH_METHOD, DISP_FREEARGS)) {
-//		VariantClear(&vargFilename);
-//		MessageBox(NULL, _T("Failed to save the workbook."), _T("Error"), MB_OK | MB_ICONERROR);
-//		return FALSE;
-//	}
-//
-//	VariantClear(&vargFilename);
-//
-//	// Close the workbook
-//	ClearAllArgs();
-//	AddArgumentBool(L"SaveChanges", 0, TRUE);  // Save changes before closing
-//	if (!ExlInvoke(m_pdispWorkbook, L"Close", NULL, DISPATCH_METHOD, DISP_FREEARGS)) {
-//		MessageBox(NULL, _T("Failed to close the workbook."), _T("Error"), MB_OK | MB_ICONERROR);
-//		return FALSE;
-//	}
-//
-//	m_pdispWorkbook->Release();
-//	m_pdispWorkbook = NULL;
-//
-//	// Quit Excel Application
-//	if (m_pdispExcelApp != NULL) {
-//		ClearAllArgs();
-//		if (!ExlInvoke(m_pdispExcelApp, L"Quit", NULL, DISPATCH_METHOD, 0)) {
-//			MessageBox(NULL, _T("Failed to quit Excel."), _T("Error"), MB_OK | MB_ICONERROR);
-//			return FALSE;
-//		}
-//		m_pdispExcelApp->Release();
-//		m_pdispExcelApp = NULL;
-//	}
-//
-//	return TRUE;
-//}
-
 BOOL CXLAutomation::ClearSheetContents(int sheet)
 {
 	// sheet 인덱스 검사
@@ -2251,7 +2089,6 @@ BOOL CXLAutomation::ClearSheetContents(int sheet)
 	VariantClear(&vargCells);
 	return result;
 }
-
 
 BOOL CXLAutomation::CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount)
 {
@@ -2319,15 +2156,3 @@ BOOL CXLAutomation::CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], i
 	}
 	return TRUE;
 }
-
-
-/*GetRange  호출 파라미터 일관성:
-
-예를 들어, ReadRangeToIntArray에서는
-if (!GetRange(sheet, startRow, startCol, rows, startCol + cols - 1, &vargRng))
-와 같이 호출되고 있습니다.
-만약 rows와 cols가 범위의 크기를 의미한다면, 마지막 행과 열은
-startRow + rows - 1, startCol + cols - 1
-로 지정하는 것이 일관성을 유지하는 데 좋습니다.
-다른 함수(예, ReadRangeToCStringArray, WriteArrayToRangeCString)는 이미 그렇게 사용되고 있으므로 
-ReadRangeToIntArray와 WriteArrayToRangeInt/Variant도 동일하게 수정하는 것을 고려하세요.*/
