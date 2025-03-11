@@ -91,7 +91,7 @@ BOOL CCompany::Decision(int thisTime ) {
 
 	//// 3. 신규 프로젝트 선택 및 진행프로젝트 업데이트
 	//// 이번주에 발주된 프로젝트중 시작할 것이 있으면 진행 프로젝트로 기록
-	// SelectNewProject(thisTime);
+	SelectNewProject(thisTime);
 	//
 	////PrintDBData();
 	return TRUE;
@@ -309,110 +309,110 @@ void sortArrayDescending(int* indexArray, int* valueArray, int size) {
 		}
 	}
 }
-//
-//void CCompany::SelectNewProject(int thisWeek)
-//{	
-//	int valueArray[MAX_CANDIDATES] = {0, };  // 값 배열
-//	int j = 0;
-//
-//	while (m_candidateTable[j] != -1) {
-//
-//		PROJECT* project;
-//		int id = m_candidateTable[j];
-//
-//		project = m_AllProjects + id;
-//
-//		if (0 < m_GlobalEnv.selectOrder) // 
-//		{
-//			if (project->category == 0) {// 외부 프로젝트
-//				valueArray[j] = project->profit;
-//			}
-//			else
-//			{
-//				int Order = m_GlobalEnv.selectOrder;
-//				if ((1 == Order) || ((4 == Order)))// 
-//					valueArray[j] = 0;// project->profit * 4 * 12 * 3;
-//				else
-//					valueArray[j] = 99999;// project->profit * 4 * 12 * 3;
-//			}
-//		}
-//		else // 0번 정책은 내부 외부 구분 없다.
-//		{
-//			valueArray[j] = project->profit;
-//		}
-//
-//		j ++;
-//	}
-//	
-//	// 설정된 우선순위대로 프로젝트를 재 배치 한다.
-//	switch (m_GlobalEnv.selectOrder)
-//	{
-//	case 0: // 발생 순서대로
-//		break;
-//	case 1: // 내부를 먼저 외부는 작은것 위주 0
-//		sortArrayAscending(m_candidateTable, valueArray, j);	// 금액 오름차순 정렬	
-//		break;
-//	case 2: // 내부를 마지막에 외부는 작은것 위주 99999
-//		sortArrayAscending(m_candidateTable, valueArray, j);	// 금액 오름차순 정렬	
-//		break;
-//
-//	case 3: // 내부를 먼저 외부는 큰것 위주 99999		
-//		sortArrayDescending(m_candidateTable, valueArray, j); // 금액 내림차순 정렬	
-//		break;
-//	case 4: // 내부를 마지막에 외부는 큰것 위주 0
-//		sortArrayDescending(m_candidateTable, valueArray, j); // 금액 내림차순 정렬	
-//		break;
-//
-//	default : 
-//		break;
-//	} 
-//
-//	int i = 0;
-//	while (m_candidateTable[i] != -1) {
-//
-//		if (i > MAX_CANDIDATES) break;
-//
-//		int id = m_candidateTable[i++];
-//
-//		PROJECT* project = m_AllProjects + id;
-//
-//		if (0 < m_GlobalEnv.selectOrder)
-//		{
-//			if (project->category == 0)// 외부 프로젝트면
-//			{
-//				if (project->startAvail < m_GlobalEnv.maxWeek)
-//				{
-//					if (IsEnoughHR(thisWeek, project))
-//					{
-//						AddProjectEntry(project, thisWeek);
-//					}
-//				}
-//			}
-//			else  // 내부프로젝트면 
-//			{
-//				if (IsInternalEnoughHR(thisWeek, project))
-//				{					
-//					AddInternalProjectEntry(project, thisWeek);
-//				}
-//				else {
-//					if (IsIntenalEnoughtNextWeekHR(thisWeek, project)) {// 내부 프로젝트는 전체 진행에 인원이 모자라도 다음주에만 진행 가능해도 인력 배치한다.
-//						AddInternalProjectEntry(project, thisWeek);
-//					}
-//				}
-//			}
-//		}
-//		else // 0번 프로젝트는 내부외부 구분 없음
-//		{
-//			if (project->startAvail < m_GlobalEnv.maxWeek)
-//			{
-//				if (IsEnoughHR(thisWeek, project))
-//				{
-//					AddProjectEntry(project, thisWeek);
-//				}
-//			}
-//		}		
-//	}
-//}
+
+void CCompany::SelectNewProject(int thisTime)
+{	
+	int valueArray[MAX_CANDIDATES] = {0, };  // 값 배열
+	int j = 0;
+
+	//while (m_candidateTable[j] != -1) {
+
+	//	PROJECT* pProject;
+	//	int id = m_candidateTable[j];
+
+	//	pProject = &(m_creator.m_pProjects[0][id]);// m_AllProjects + id;
+
+	//	if (0 < m_GlobalEnv.selectOrder) // 
+	//	{
+	//		if (pProject->category == 0) {// 외부 프로젝트
+	//			valueArray[j] = pProject->profit;
+	//		}
+	//		else
+	//		{
+	//			int Order = m_GlobalEnv.selectOrder;
+	//			if ((1 == Order) || ((4 == Order)))// 
+	//				valueArray[j] = 0;// project->profit * 4 * 12 * 3;
+	//			else
+	//				valueArray[j] = 99999;// project->profit * 4 * 12 * 3;
+	//		}
+	//	}
+	//	else // 0번 정책은 내부 외부 구분 없다.
+	//	{
+	//		valueArray[j] = pProject->profit;
+	//	}
+
+	//	j ++;
+	//}
+	//
+	// 설정된 우선순위대로 프로젝트를 재 배치 한다.
+	//switch (m_GlobalEnv.selectOrder)
+	//{
+	//case 0: // 발생 순서대로
+	//	break;
+	//case 1: // 내부를 먼저 외부는 작은것 위주 0
+	//	sortArrayAscending(m_candidateTable, valueArray, j);	// 금액 오름차순 정렬	
+	//	break;
+	//case 2: // 내부를 마지막에 외부는 작은것 위주 99999
+	//	sortArrayAscending(m_candidateTable, valueArray, j);	// 금액 오름차순 정렬	
+	//	break;
+
+	//case 3: // 내부를 먼저 외부는 큰것 위주 99999		
+	//	sortArrayDescending(m_candidateTable, valueArray, j); // 금액 내림차순 정렬	
+	//	break;
+	//case 4: // 내부를 마지막에 외부는 큰것 위주 0
+	//	sortArrayDescending(m_candidateTable, valueArray, j); // 금액 내림차순 정렬	
+	//	break;
+
+	//default : 
+	//	break;
+	//} 
+
+	int i = 0;
+	while (m_candidateTable[i] != -1) {
+
+		if (i > MAX_CANDIDATES) break;
+
+		int id = m_candidateTable[i++];
+
+		PROJECT* pProject = &(m_creator.m_pProjects[0][id]);
+
+		//if (0 < m_env.selectOrder)
+		//{
+			//if (pProject->category == 0)// 외부 프로젝트면
+			//{
+			//	if (pProject->startAbleTime < m_env.maxPeriod)
+			//	{
+			//		if (IsEnoughHR(thisTime, pProject))
+			//		{
+			//			AddProjectEntry(pProject, thisTime);
+			//		}
+			//	}
+			//}
+			//else  // 내부프로젝트면 
+			//{
+			//	if (IsInternalEnoughHR(thisTime, pProject))
+			//	{					
+			//		AddInternalProjectEntry(pProject, thisTime);
+			//	}
+			//	else {
+			//		//if (IsIntenalEnoughtNextWeekHR(thisTime, pProject)) {// 내부 프로젝트는 전체 진행에 인원이 모자라도 다음주에만 진행 가능해도 인력 배치한다.
+			//			AddInternalProjectEntry(pProject, thisTime);
+			//		//}
+			//	}
+			//}
+		//}
+		//else // 0번 프로젝트는 내부외부 구분 없음
+		//{			
+			if (pProject->startAbleTime < m_env.maxPeriod)
+			{
+				if (IsEnoughHR(thisTime, pProject))
+				{
+					AddProjectEntry(pProject, thisTime);
+				}
+			}
+		//}		
+	}
+}
 
 // 모든 체크가 끝나고 호출된다. 
 // 수주 프로젝트를 진행하기로 선택하면 호출된다.

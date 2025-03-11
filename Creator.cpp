@@ -32,15 +32,16 @@ BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv)
 int CCreator::CreateAllProjects()
 {
     int prjectId = 0;
-	CreateProjects(INTERNAL_PRJ, prjectId++, 0);// 내부는 하나 가지고 시작한다.
+	//CreateProjects(INTERNAL_PRJ, prjectId++, 0);// 내부는 하나 가지고 시작한다.
 
     for (int time = 0; time < m_gEnv.maxPeriod; time++)
     {
-        int newCnt = PoissonRandom(m_gEnv.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
-        for (int i = 0; i < newCnt; i++) // 내부 프로젝트 발생
-        {
-            CreateProjects(INTERNAL_PRJ, prjectId++, time);
-        }
+        int newCnt = 0;
+        //int newCnt = PoissonRandom(m_gEnv.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
+        //for (int i = 0; i < newCnt; i++) // 내부 프로젝트 발생
+        //{
+        //    CreateProjects(INTERNAL_PRJ, prjectId++, time);
+        //}
 
         newCnt = PoissonRandom(m_gEnv.extPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
         for (int i = 0; i < newCnt; i++) // 외부 프로젝트 발생
