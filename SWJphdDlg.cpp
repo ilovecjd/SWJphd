@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(CSWJphdDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_SAVE_FILE_NAME, &CSWJphdDlg::OnBnClickedBtnSaveFileName)
 	ON_BN_CLICKED(IDC_BTN_ENV_LOAD, &CSWJphdDlg::OnBnClickedBtnEnvLoad)
 	ON_BN_CLICKED(IDC_BUTTON1, &CSWJphdDlg::OnBnClickedButton1)	
+	ON_BN_CLICKED(IDC_BTN_STEP_BY_STEP, &CSWJphdDlg::OnBnClickedBtnStepByStep)
 END_MESSAGE_MAP()
 
 
@@ -81,6 +82,11 @@ BOOL CSWJphdDlg::OnInitDialog()
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 		
 	srand((unsigned)time(NULL)); // 무작위 시드 초기화
+	m_pCreator		= NULL;
+	m_pSaveXl		= NULL;
+	m_pCompany		= NULL;
+	m_stepByStepCnt	= -1;
+
 	// 컨트롤 변수와 연결
 	m_editEnvFilePath.SubclassDlgItem(IDC_EDIT_ENV_FILE_PATH, this);
 	m_editSaveFilePath.SubclassDlgItem(IDC_EDIT_SAVE_FILE_PATH, this);
@@ -353,8 +359,8 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	strTemp.Format(_T("%.2f"), m_gEnv.sigma2Rate);
 	SetDlgItemText(IDC_EDIT_SIGMA2, strTemp);
 
-	m_pCreator.Init(m_strEnvFilePath, &m_gEnv);
-	PrintAllProject(&m_pCreator);
+	
+	//PrintAllProject(&m_pCreator);
 
 }
 
@@ -384,6 +390,7 @@ void CSWJphdDlg::OnBnClickedButton1()
 	xlAuto.ReleaseExcel();
 
 }
+
 void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
 {
 	// 엑셀 파일 열기
@@ -455,3 +462,56 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
     xlAuto.ReleaseExcel();
 }
 
+
+
+void CSWJphdDlg::OnBnClickedBtnStepByStep()
+{
+	// 초기화에 추가??	
+	// step 카운터가 0이면 creator과 companny 생성
+	if (-1 == m_stepByStepCnt)
+	{
+		// 다른 버튼들은 disable 하고 step by step 모드로 진입함.
+		m_stepByStepCnt = 0; 
+
+		if(NULL != m_pSaveXl)
+		{
+			m_pSaveXl->ReleaseExcel();
+			delete m_pSaveXl;
+			m_pSaveXl = NULL;
+		}
+		m_pSaveXl = new CXLEzAutomation;
+		m_pSaveXl->OpenExcelFile(m_strSaveFilePath,_T("project"),TRUE);
+				
+		if (NULL != m_pCreator)
+		{
+			delete m_pCreator;
+			m_pCreator = new CCreator;
+			m_pCreator = NULL;
+		}
+		m_pCreator = new CCreator;
+		m_pCreator->Init(&m_gEnv);
+
+		if (NULL != m_pCompany)
+		{
+			delete m_pCompany;
+			m_pCompany = NULL;
+		}
+		m_pCompany = new CCompany(&m_gEnv, m_pCreator);
+		m_pCompany->Init();
+
+		
+	}
+
+	// 기간이 다 될때 까지
+	if(m_stepByStepCnt < m_gEnv.simulationPeriod)
+	{
+		if (FALSE == m_pCompany->Decision(m_stepByStepCnt))  // 이번 스탭의 기간에 결정해야 할 일들			
+		{
+			m_stepByStepCnt++;
+			//AfxMessageBox();
+		}
+	}
+	m_stepByStepCnt ++;
+	// 진행한 한주간의 정보 기록
+	//PrintCompanyResualt(strFileName, strOutSheetName);
+}

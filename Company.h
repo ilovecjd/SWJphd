@@ -33,7 +33,7 @@ public:
 
 
 
-	int m_lastDecisionWeek;
+	int m_lastDecisionTime;
 		
 	//int m_recruitTerm; // 인원 충감을 계산하는 기간, 몇주마다 충원감원을 검사할지.
 	

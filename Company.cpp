@@ -77,7 +77,7 @@ void CCompany::ReadProject(FILE* fp)
 // 이번 기간에 결정할 일들. 프로젝트의 신규진행, 멈춤, 인원증감 결정
 BOOL CCompany::Decision(int thisTime ) {
 
-	//m_lastDecisionWeek = thisWeek;
+	m_lastDecisionTime = thisTime;
 
 	//// 1. 지난주에 진행중인 프로젝트중 완료되지 않은 프로젝트들만 이번주로 이관
 	if (FALSE == CheckLastWeek(thisTime))
@@ -87,11 +87,11 @@ BOOL CCompany::Decision(int thisTime ) {
 	}
 	//
 	//// 2. 진행 가능한 후보프로젝트들을  candidateTable에 모은다
-	//SelectCandidates(thisTime);
+	SelectCandidates(thisTime);
 
 	//// 3. 신규 프로젝트 선택 및 진행프로젝트 업데이트
 	//// 이번주에 발주된 프로젝트중 시작할 것이 있으면 진행 프로젝트로 기록
-	//SelectNewProject(thisTime);
+	// SelectNewProject(thisTime);
 	//
 	////PrintDBData();
 	return TRUE;
@@ -508,7 +508,7 @@ int CCompany::CalculateFinalResult()
 {
 	int result = m_env.initialFunds;
 
-	for (int i = 0; i < m_lastDecisionWeek; i++)
+	for (int i = 0; i < m_lastDecisionTime; i++)
 	{
 		result += (m_incomeTable[0][i]- m_expensesTable[0][i]);
 	}
@@ -520,7 +520,7 @@ int CCompany::CalculateTotalInCome()
 {
 	int result = 0;
 
-	for (int i = 0; i < m_lastDecisionWeek; i++)
+	for (int i = 0; i < m_lastDecisionTime; i++)
 	{
 		result += m_incomeTable[0][i];
 	}

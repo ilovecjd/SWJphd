@@ -15,10 +15,9 @@ CCreator::~CCreator()
 {
 }
 
-BOOL CCreator::Init(CString filePath, GLOBAL_ENV* pGlobalEnv)
+BOOL CCreator::Init(GLOBAL_ENV* pGlobalEnv)
 {
-	*(&m_gEnv) = *pGlobalEnv;
-    m_strEnvFilePath = filePath;
+	*(&m_gEnv) = *pGlobalEnv;    
 
 	m_pProjects.Resize(0, 150);
     m_totalProjectNum = CreateAllProjects();

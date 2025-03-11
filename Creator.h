@@ -13,11 +13,11 @@ public:
 
 	// song
 public :
-	CString m_strEnvFilePath;
+	//CString m_strEnvFilePath;
 	int m_totalProjectNum;	
 	//Dynamic2DArray m_orderTable;	
     DynamicProjectArray m_pProjects;
-	BOOL Init(CString filePath, GLOBAL_ENV* pGlobalEnv);
+	BOOL Init(GLOBAL_ENV* pGlobalEnv);
 	int MakeModeAndRevenue(PROJECT* pProject, int duration, int intOrExt );
 
 	void Save(CString filename, CString strInSheetName);

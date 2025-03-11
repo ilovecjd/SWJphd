@@ -5,6 +5,8 @@
 #pragma once
 #include "GlobalEnv.h"
 #include "Creator.h"
+#include"Company.h"
+#include "XLEzAutomation.h"
 
 class CSWJphdDlgAutoProxy;
 
@@ -58,8 +60,11 @@ private:
 	void PrintAllProject(CCreator* pCreator);
 
 
-	CCreator m_pCreator;
-	GLOBAL_ENV m_gEnv; // 전역 환경변수들을 담는다.
+	GLOBAL_ENV			m_gEnv; // 전역 환경변수들을 담는다
+	CCreator*			m_pCreator;
+	CXLEzAutomation*	m_pSaveXl;
+	CCompany*			m_pCompany;
+	int					m_stepByStepCnt;// 디버깅을 위해서 한타임씩 진행 할때 사용하는 컨틀롤변수
 
 	void PrintAllProject(CCreator m_pCreator);
 
@@ -69,4 +74,5 @@ public:
 	afx_msg void OnBnClickedBtnEnvLoad();
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnEnChangeEditMaxDuration();
+	afx_msg void OnBnClickedBtnStepByStep();
 };
