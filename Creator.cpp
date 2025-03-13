@@ -63,7 +63,7 @@ int CCreator::CreateAllProjects()
 int CCreator::CreateProjects(int category, int Id, int time)
 {
     PROJECT Project;
-    memset(&Project, 0, sizeof(struct PROJECT));
+    memset(&Project, -1, sizeof(struct PROJECT));
 
     // 내부 외부에 따라서 최소 기간과 최대 기간이 차이가 있음.
     int duration = 0;

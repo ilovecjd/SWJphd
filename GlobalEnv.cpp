@@ -30,6 +30,8 @@ void PrintOneProject(CXLEzAutomation* pSaveXl, int SheetNum, PROJECT* pProject)
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->secondPayTime);		j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->finalPayTime);		j++;
 
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->selectMode);	j++;
+
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.higHrCount);	j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.midHrCount);	j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.lowHrCount);	j++;
@@ -114,19 +116,23 @@ void PrintDashBoard(CXLEzAutomation* pSaveXl,int sheet, CCompany* pCompany, CCre
     pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[HR_MID][thisTime]); posY++;
     pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[HR_LOW][thisTime]); posY++;
 
-    // 진행프로젝트/모드
-    //int doingProjects = pCompany->m_doingTable[ORDER_SUM][thisTime];
-    //pCompany->m_doingTable;
+    // 진행프로젝트/모드 형태로 표시한다.
+    int doingProjects = pCompany->m_doingTable[ORDER_SUM][thisTime];
 
-    //posY = 21;
-    //for (int i = 0; i < doingProjects ; i++) // 
-    //{
-    //    int ID = pCompany->m_doingTable[i][thisTime];
-    //    PROJECT* pProject = ;
-    //    pProject->selectMode;
+    posY = 21;
+    pSaveXl->SetCellValue(sheet, posY, posX, doingProjects); posY++;
 
-    //}
-    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[][thisTime]); posY++;
+    for (int i = 0; i < doingProjects ; i++) // 
+    {
+        int ID              = pCompany->m_doingTable[i+1][thisTime];        
+        PROJECT* pProject   = &(pCompany->m_creator.m_pProjects[0][ID]);
+        int iMode           = pProject->selectMode;
+        CString strTemp;
+        strTemp.Format(_T("%3d/%d"),ID,iMode);
+
+        pSaveXl->SetCellValue(sheet, posY, posX,strTemp); posY++;
+    }
+    
 
     // 수입, 지출, 차액
     posY = 28;
@@ -207,6 +213,7 @@ void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum  )
     CString strTitle[] = {
             _T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),
             _T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
+            _T("선택모드"),
             _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
             _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
             _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익")
