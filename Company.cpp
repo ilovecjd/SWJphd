@@ -59,7 +59,7 @@ BOOL CCompany::Init()
 	m_expensesTable.Clear(expense);// 고정비용 나가고
 	m_doingTable.Clear(-1); // 하는일은 없고
 	m_incomeTable.Clear(0); // 들어올돈 없고
-	m_balanceTable.Clear(expense); // checkLastWeek 함수에서 자금 상황 체크용으로 사용함
+	m_balanceTable.Clear(0); // checkLastWeek 함수에서 자금 상황 체크용으로 사용함
 	
     return TRUE;
 }
@@ -140,11 +140,13 @@ BOOL CCompany::CheckLastWeek(int thisTime)
 	
 	// 자금 현황 체크. 전체를 매번 다시 계산하는것이 불편해 보여도 그대로 두자.
 	// 현재 보유중인 현금
-	int Cash = 0;// m_incomeTable의 첫 값을 m_GlobalEnv.Cash_Init; 로 초기화함.
+	int Cash = m_env.initialFunds;
 	for (int i = 0; i < thisTime; i++)
 	{
 		Cash += (m_incomeTable[0][i] - m_expensesTable[0][i]);
-		m_balanceTable[0][i] = Cash;
+
+		if( 0 < i ) // 지난주 잔액에 적는다.thisTime == 0 인경우는 사업 시작 전 상황이므로 InitFunds 값을 사용한다.
+			m_balanceTable[0][i-1] = Cash;
 	}
 
 	// 이번주 현금은 이상이 없는가?

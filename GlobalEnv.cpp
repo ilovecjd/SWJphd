@@ -121,15 +121,15 @@ void PrintDashBoard(CXLEzAutomation* pSaveXl,int sheet, CCompany* pCompany, CCre
     //posY = 21;
     //for (int i = 0; i < doingProjects ; i++) // 
     //{
-    //    ID = pCompany->m_doingTable[i][thisTime];
+    //    int ID = pCompany->m_doingTable[i][thisTime];
     //    PROJECT* pProject = ;
     //    pProject->selectMode;
 
     //}
-    //pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[][thisTime]); posY++;
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_freeHR[][thisTime]); posY++;
 
     // 수입, 지출, 차액
-    posY = 27;
+    posY = 28;
     pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_incomeTable[0] [thisTime] ); posY++;
     pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_expensesTable[0] [thisTime] ); posY++;
     pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_balanceTable[0][thisTime]); posY++;
@@ -141,7 +141,7 @@ void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum)
 {
     CString strTitle[] = {
             _T("주"),_T("누계"),_T("발주"),_T(""),
-            _T("총원"),_T("HR_H"),_T("HR_M"),_T("HR_L"),
+            _T("총원"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T(""),
             _T("투입"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T(""),
             _T("여유"),_T("HR_H"),_T("HR_M"),_T("HR_L"),_T(""),
             _T("진행"),_T(""),_T(""),_T(""),_T(""),_T(""),_T(""),

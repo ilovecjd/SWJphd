@@ -158,6 +158,7 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
     pProject->revenue   = revenue;
     
     _MODE tempMode; //mode 0 
+    RtlSecureZeroMemory(&tempMode,sizeof(_MODE));
     tempMode.higHrCount = nHigh;
     tempMode.midHrCount = nMid;
     tempMode.lowHrCount = nLow;
