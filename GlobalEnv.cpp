@@ -89,7 +89,7 @@ void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompa
 void PrintDashBoard(CXLEzAutomation* pSaveXl,int sheet, CCompany* pCompany, CCreator* pCreator, int thisTime)
 {
     int posY = 2;
-    int posX = thisTime;
+    int posX = thisTime + 2;// 컬럼의 인덱스는 2 base로 시작한다.
 
     // 이번 기간까지 발생누계, 이번기간 발생    
     pSaveXl->SetCellValue(sheet, posY, posX, thisTime); posY++;

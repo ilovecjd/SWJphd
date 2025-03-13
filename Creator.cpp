@@ -40,11 +40,11 @@ int CCreator::CreateAllProjects()
     {
         int newCnt  = 0;
         
-        //int newCnt = PoissonRandom(m_gEnv.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
-        //for (int i = 0; i < newCnt; i++) // 내부 프로젝트 발생
-        //{
-        //    CreateProjects(INTERNAL_PRJ, prjectId++, time);
-        //}
+        newCnt = PoissonRandom(m_env.intPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
+        for (int i = 0; i < newCnt; i++) // 내부 프로젝트 발생
+        {
+            CreateProjects(INTERNAL_PRJ, projectId++, time);
+        }
 
         newCnt = PoissonRandom(m_env.extPrjInTime);	// 이번기간에 발생하는 프로젝트 갯수
         for (int i  = 0; i < newCnt; i++) // 외부 프로젝트 발생
@@ -220,6 +220,9 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
 
         pProject->mode2			= tempMode;
     }
+    else
+        pProject->mode0 = tempMode;
+
 
     return 0;
 }
