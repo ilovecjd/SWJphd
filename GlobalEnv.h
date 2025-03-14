@@ -130,7 +130,7 @@ struct PROJECT {
 	int secondPayTime;	// 2차 지급일
 	int finalPayTime;	// 3차 지급일
 
-	int selectMode;		// 선택된 모드
+	_MODE	actMode;	// 선택된 모드
 	_MODE	mode0;		// 신제품개발의 진행 방법중 하나
 	_MODE	mode1;
 	_MODE	mode2;

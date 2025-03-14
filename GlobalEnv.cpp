@@ -30,7 +30,13 @@ void PrintOneProject(CXLEzAutomation* pSaveXl, int SheetNum, PROJECT* pProject)
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->secondPayTime);		j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->finalPayTime);		j++;
 
-    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->selectMode);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->actMode.higHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->actMode.midHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->actMode.lowHrCount);	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->actMode.lifeCycle); 	j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->actMode.mu);			j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->actMode.sigma);		j++;
+    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->actMode.fixedIncome);	j++;
 
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.higHrCount);	j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->mode0.midHrCount);	j++;
@@ -124,22 +130,15 @@ void PrintDashBoard(CXLEzAutomation* pSaveXl,int sheet, CCompany* pCompany, CCre
 
     for (int i = 0; i < doingProjects ; i++) // 
     {
-        int ID              = pCompany->m_doingTable[i+1][thisTime];        
-        PROJECT* pProject   = &(pCompany->m_creator.m_pProjects[0][ID]);
-        int iMode           = pProject->selectMode;
-        CString strTemp;
-        strTemp.Format(_T("%3d/%d"),ID,iMode);
-
-        pSaveXl->SetCellValue(sheet, posY, posX,strTemp); posY++;
+        int ID              = pCompany->m_doingTable[i+1][thisTime];
+        pSaveXl->SetCellValue(sheet, posY, posX,ID); posY++;
     }
-    
 
     // 수입, 지출, 차액
     posY = 28;
     pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_incomeTable[0] [thisTime] ); posY++;
     pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_expensesTable[0] [thisTime] ); posY++;
-    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_balanceTable[0][thisTime]); posY++;
-  
+    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_balanceTable[0][thisTime]); posY++;  
 
 }
 
@@ -213,10 +212,10 @@ void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum  )
     CString strTitle[] = {
             _T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),
             _T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
-            _T("선택모드"),
-            _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
-            _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
-            _T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익")
+            _T("고급A"),_T("중급A"),_T("초급A"),_T("lifeCycleA"),_T("MUA"),_T("SIGMAA"),_T("고정수익"),
+            _T("고급0"),_T("중급0"),_T("초급0"),_T("lifeCycle0"),_T("MU0"),_T("SIGMA0"),_T("고정수익"),
+            _T("고급1"),_T("중급1"),_T("초급1"),_T("lifeCycle1"),_T("MU1"),_T("SIGMA1"),_T("고정수익"),
+            _T("고급2"),_T("중급2"),_T("초급2"),_T("lifeCycle2"),_T("MU2"),_T("SIGMA2"),_T("고정수익")
     };
 
     int nPrintWidth = sizeof(strTitle) / sizeof(strTitle[0]);
