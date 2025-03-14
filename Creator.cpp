@@ -72,8 +72,8 @@ int CCreator::CreateProjects(int category, int Id, int time)
     else
         duration = RandomBetween(m_env.minMode, m_env.maxMode);
     
-
     MakeModeAndRevenue(&Project, duration, category);		    // mode 를 만들고 모드별로 인원을 계산한다. 
+    SetInterActMode(0);
 
     Project.category        = category;			    // 프로젝트 분류 (0: 외부 / 1: 내부)
     Project.ID              = Id;					// 프로젝트의 번호	
@@ -222,12 +222,28 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
         pProject->mode2			= tempMode;
     }
     else
-        pProject->mode0 = tempMode;
+    { 
+        pProject->mode0         = tempMode;
+        pProject->actMode       = tempMode;
+    }
 
 
     return 0;
 }
 
+// 내부프로젝트의 actMode를 주어진 룰대로 변경한다. 
+void CCreator::SetInterActMode(int iRule)
+{
+    int i = 0;
+    for(i = 0; i<m_totalProjectNum; i++)
+    {
+        PROJECT* pProject = &(m_pProjects[0][i]);
+        if (INTERNAL_PRJ == pProject->category)
+        {
+            pProject->actMode = pProject->mode0;
+        }
+    }
+}
 
 /*
 void CCreator::Save(CString filename,CString strInSheetName)

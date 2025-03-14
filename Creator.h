@@ -21,6 +21,7 @@ public :
 
 	BOOL Init(GLOBAL_ENV* pGlobalEnv);
 	int MakeModeAndRevenue(PROJECT* pProject, int duration, int intOrExt );
+	void SetInterActMode(int iRule);
 
 	void Save(CString filename, CString strInSheetName);
 		

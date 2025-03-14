@@ -176,19 +176,48 @@ void CCompany::SelectCandidates(int thisTime)
 
 		if(pProject->createTime == thisTime)
 		{
-			if ((pProject->category == EXTERNAL_PRJ))  // 외부 프로젝트
-			{
-				if (IsEnoughHR(thisTime, pProject)) // 인원 체크			
+			//if ((pProject->category == EXTERNAL_PRJ))  // 외부 프로젝트
+			//{
+				if (IsEnoughHR_ActMode(thisTime, pProject)) // 인원 체크			
 					m_candidateTable[j++] = pProject->ID;
-			}
-			else  //내부프로젝트
-			{
-				if (IsInternalEnoughHR(thisTime, pProject)) // 내부 프로젝트 인원 체크			
-					m_candidateTable[j++] = pProject->ID;
-			}
+			//}
+			//else  //내부프로젝트
+			//{
+				//if (IsEnoughHR_ActMode(thisTime, pProject)) // 내부 프로젝트 인원 체크			
+					//m_candidateTable[j++] = pProject->ID;
+			//}
 		}
 	}
 }
+
+// 프로젝트의 actMode의 인원 체크
+BOOL CCompany::IsEnoughHR_ActMode(int thisTime, PROJECT* pProject)
+{
+	// 원본 인력 테이블을 복사해서 프로젝트 인력을 추가 할 수 있는지 확인한다.
+	Dynamic2DArray doingHR = m_doingHR;
+	int endTime = pProject->endTime;
+
+	for (int i = thisTime; i <= endTime; i++)
+	{
+		doingHR[HR_HIG][i] += pProject->actMode.higHrCount;
+		doingHR[HR_MID][i] += pProject->actMode.midHrCount;
+		doingHR[HR_LOW][i] += pProject->actMode.lowHrCount;
+	}
+
+	for (int i = thisTime; i < m_env.maxPeriod; i++)
+	{
+		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
+			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
+			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
+		{
+			pProject->actMode.isPossible = FALSE;
+			return FALSE;
+		}
+	}
+	
+	return TRUE;
+}
+
 
 // 외부 프로젝트의 인원 체크
 BOOL CCompany::IsEnoughHR(int thisTime, PROJECT* pProject)
