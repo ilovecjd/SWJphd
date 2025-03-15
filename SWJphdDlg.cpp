@@ -504,23 +504,40 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 		//m_pSaveXl->OpenExcelFile(m_strSaveFilePath,_T("project"),TRUE);
 		m_pSaveXl->ClearSheetContents(WS_NUM_PROJECT);
 		PrintProjectSheetHeader(m_pSaveXl, WS_NUM_PROJECT);
+
 		m_pSaveXl->ClearSheetContents(WS_NUM_DASHBOARD);
 		PrintDBoardHeader(m_pSaveXl, WS_NUM_DASHBOARD);
 		PrintGenv(m_pSaveXl, WS_NUM_GENV, m_pCreator);
 	}
 
 	// 기간이 다 될때 까지
-	if(m_stepByStepCnt < m_gEnv.simulationPeriod)
+	if(m_stepByStepCnt < m_gEnv.maxPeriod)
 	{
 		if (FALSE == m_pCompany->Decision(m_stepByStepCnt))  // 이번 스탭의 기간에 결정해야 할 일들			
 		{
-			m_stepByStepCnt++;
-			//AfxMessageBox();
+			GetDlgItem(IDC_BUTTON1)->EnableWindow(TRUE);
+			GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
+
+			PrintOneTime(m_pSaveXl, m_pCreator, m_pCompany, m_stepByStepCnt);
+
+			AfxMessageBox(_T("파산"));
+
+			m_stepByStepCnt = -1;
+
+			return;
 		}
 	}
 
 	// 진행한 한주간의 정보 기록
 	PrintOneTime(m_pSaveXl, m_pCreator, m_pCompany, m_stepByStepCnt);
 
+	// 기간이 다 되었으면 
+	if (m_pCompany->m_env.maxPeriod <= m_stepByStepCnt)
+	{	
+		m_stepByStepCnt = -1;
+		GetDlgItem(IDC_BUTTON1)->EnableWindow(TRUE);
+		GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
+		return;
+	}
 	m_stepByStepCnt ++;
 }

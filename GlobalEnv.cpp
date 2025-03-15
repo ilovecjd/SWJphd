@@ -135,13 +135,13 @@ void PrintDashBoard(CXLEzAutomation* pSaveXl,int sheet, CCompany* pCompany, CCre
     }
 
     // 수입, 지출, 차액
-    int iBalance = pCompany->m_env.initialFunds + pCompany->m_incomeTable[0][thisTime] - pCompany->m_expensesTable[0][thisTime];
-
-    posY = 28;
-    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_incomeTable[0] [thisTime] ); posY++;
-    pSaveXl->SetCellValue(sheet, posY, posX, pCompany->m_expensesTable[0] [thisTime] ); posY++;    
-    pSaveXl->SetCellValue(sheet, posY, posX, iBalance); posY++;
-
+    if (0 < thisTime)
+    {
+        posY = 28;
+        pSaveXl->SetCellValue(sheet, posY, posX-1, pCompany->m_incomeTable[0] [thisTime-1] ); posY++;
+        pSaveXl->SetCellValue(sheet, posY, posX-1, pCompany->m_expensesTable[0] [thisTime-1] ); posY++;    
+        pSaveXl->SetCellValue(sheet, posY, posX-1, pCompany->m_balanceTable[0][thisTime-1]); posY++;
+    }
 }
 
 void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum)

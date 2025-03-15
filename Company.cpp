@@ -37,13 +37,8 @@ BOOL CCompany::Init()
 	m_expensesTable.Resize(1, maxTime);
 	m_balanceTable.Resize(1, maxTime);
 
-
-
 	m_creator.m_pProjects;
 	m_creator.m_totalProjectNum;
-
-
-
 
 	// 매 시점 마다 필요한 비용
 	int expense = m_env.higHrCount * m_env.higHrCost + m_env.midHrCount * m_env.midHrCost + m_env.lowHrCount * m_env.lowHrCost;
@@ -60,6 +55,7 @@ BOOL CCompany::Init()
 	m_doingTable.Clear(-1); // 하는일은 없고
 	m_incomeTable.Clear(0); // 들어올돈 없고
 	m_balanceTable.Clear(0); // checkLastWeek 함수에서 자금 상황 체크용으로 사용함
+	m_balanceTable[0][0]	= m_env.initialFunds; //
 	
     return TRUE;
 }
@@ -109,9 +105,20 @@ BOOL CCompany::Decision(int thisTime ) {
 // 완료프로젝트 검사 및 진행프로젝트 업데이트
 // 1. 지난 기간에 진행중인 프로젝트중 완료 내부 프로젝트가 있는가?
 BOOL CCompany::CheckLastWeek(int thisTime)
-{
-	if (0 == thisTime) // 첫주는 체크할 지난주가 없음
+{	
+	if (0 == thisTime) // 첫주는 체크할 지난주가 없음		
 		return TRUE;
+
+	// 지난주까지의 지급은 잘 되었는가?? (이번주 운영 가능한가?)
+	// 자금 현황 체크. 전체를 매번 다시 계산하는것이 불편해 보여도 그대로 두자.	
+	int Cash = m_env.initialFunds;
+	for (int i = 0; i < thisTime; i++)
+		Cash += (m_incomeTable[0][i] - m_expensesTable[0][i]);
+
+	m_balanceTable[0][thisTime-1] = Cash;
+
+	if ( 0 > Cash)// 지난주에 파산
+		return FALSE;
 
 	//지난주에 진행 중이던 프로젝트의 갯수
 	int nLastProjects = m_doingTable[ORDER_SUM][thisTime - 1];
@@ -137,24 +144,7 @@ BOOL CCompany::CheckLastWeek(int thisTime)
 			}
 		}
 	}
-	
-	// 자금 현황 체크. 전체를 매번 다시 계산하는것이 불편해 보여도 그대로 두자.
-	// 현재 보유중인 현금
-	int Cash = m_env.initialFunds;
-	for (int i = 0; i < thisTime; i++)
-	{
-		Cash += (m_incomeTable[0][i] - m_expensesTable[0][i]);
 
-		if( 0 < i ) // 지난주 잔액에 적는다.thisTime == 0 인경우는 사업 시작 전 상황이므로 InitFunds 값을 사용한다.
-			m_balanceTable[0][i-1] = Cash;
-	}
-
-	// 이번주 현금은 이상이 없는가?
-	if (Cash < 0)// 이번주에 파산
-	{
-		return FALSE;
-	}
-	
 	return TRUE;
 }
 
