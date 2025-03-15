@@ -310,7 +310,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	// 엑셀 파일 닫기
 	xlAuto.ReleaseExcel();
 
-	// Global 환경 변수 업데이트
+	// Global 환경 변수 값들을 엑셀파일에 있는 값으로 업데이트 한다.
 	CString strTemp;
 	SetDlgItemInt(IDC_EDIT_SIM_PERIOD,	m_gEnv.simulationPeriod);
 	strTemp.Format(_T("%.2f"), m_gEnv.technicalFee);  //
@@ -360,33 +360,6 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	//GetDlgItem(IDC_BUTTON1)->EnableWindow(FALSE);
 	
 	//PrintAllProject(&m_pCreator);
-
-}
-
-void CSWJphdDlg::OnBnClickedButton1()
-{
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	// excel file write test code
-	CXLEzAutomation xlAuto;
-	LPOLESTR sheetsName[1] = { L"project"};
-	if (!xlAuto.OpenExcelFile(m_strSaveFilePath, sheetsName, 1))
-	{
-		AfxMessageBox(_T("엑셀 파일을 열 수 없습니다."));
-		return;
-	}
-
-#define _PRINT_WIDTH 35	
-	CString strTitle[1][_PRINT_WIDTH] = {
-			_T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),
-			_T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
-			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
-			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익"),
-			_T("고급"),_T("중급"),_T("초급"),_T("lifeCycle"),_T("MU"),_T("SIGMA"),_T("고정수익")
-	};
-	xlAuto.WriteArrayToRange(0, 1, 1, (CString*)strTitle, _PRINT_WIDTH,1);
-
-	// 엑셀 파일 닫기
-	xlAuto.ReleaseExcel();
 
 }
 
@@ -545,5 +518,62 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 
 void CSWJphdDlg::OnBnClickedBtnEnvSave()
 {
+	// Global 환경 변수 값들을 엑셀파일로 저장한다.
+	CString strTemp;
 	
+	m_gEnv.simulationPeriod = GetDlgItemInt(IDC_EDIT_SIM_PERIOD);
+	
+	GetDlgItemText(IDC_EDIT_TECH_FEE, strTemp);
+	m_gEnv.technicalFee = _tstof(strTemp);
+
+	m_gEnv.higHrCount	= GetDlgItemInt(IDC_EDIT_HIG_HR);
+	m_gEnv.midHrCount	= GetDlgItemInt(IDC_EDIT_MID_HR);
+	m_gEnv.lowHrCount	= GetDlgItemInt(IDC_EDIT_LOW_HR);
+
+	m_gEnv.higHrCost	= GetDlgItemInt(IDC_EDIT_HIG_COST);
+	m_gEnv.midHrCost	= GetDlgItemInt(IDC_EDIT_MID_COST);
+	m_gEnv.lowHrCost	= GetDlgItemInt(IDC_EDIT_LOW_COST);
+
+	m_gEnv.initialFunds	= GetDlgItemInt(IDC_EDIT_INI_FUNDS);
+
+	GetDlgItemText(IDC_EDIT_EX_PROBABILITY, strTemp);
+	m_gEnv.extPrjInTime = _tstof(strTemp);
+		
+	GetDlgItemText(IDC_EDIT_IN_PROBABILITY, strTemp);
+	m_gEnv.intPrjInTime = _tstof(strTemp);
+
+	m_gEnv.maxDuration	= GetDlgItemInt(IDC_EDIT_MAX_DURATION);
+	m_gEnv.minDuration	= GetDlgItemInt(IDC_EDIT_MIN_DURATION);
+
+	m_gEnv.maxMode		= GetDlgItemInt(IDC_EDIT_MAX_MODE);
+	m_gEnv.minMode		= GetDlgItemInt(IDC_EDIT_MIN_MODE);
+	m_gEnv.lifeCycle	= GetDlgItemInt(IDC_EDIT_LIFE_CYCLE);
+
+	GetDlgItemText(IDC_EDIT_PROFIT_RATE, strTemp);
+	m_gEnv.profitRate = _tstof(strTemp);
+
+	m_gEnv.mu0Rate		= GetDlgItemInt(IDC_EDIT_MU0);
+	m_gEnv.sigma0Rate	= GetDlgItemInt(IDC_EDIT_SIGMA0);
+		
+	SetDlgItemText(IDC_EDIT_MU1, strTemp);
+	m_gEnv.mu1Rate		= _tstof(strTemp);
+		
+	SetDlgItemText(IDC_EDIT_SIGMA1, strTemp);
+	m_gEnv.sigma1Rate	= _tstof(strTemp);
+		
+	SetDlgItemText(IDC_EDIT_MU2, strTemp);
+	m_gEnv.mu2Rate		= _tstof(strTemp);
+		
+	SetDlgItemText(IDC_EDIT_SIGMA2, strTemp);
+	m_gEnv.sigma2Rate	= _tstof(strTemp);
+
+	// 엑셀 파일 열기
+	CXLEzAutomation xlGEnv;	
+	CString strSheet = _T("GlobalEnv");
+	if (!xlGEnv.OpenExcelFile(m_strEnvFilePath, strSheet, FALSE)) {
+		AfxMessageBox(_T("환경변수 파일을 열수 없습니다."));
+		return;
+	}
+	SaveGenv(&xlGEnv, 0, &m_gEnv, TRUE);
+	xlGEnv.ReleaseExcel();
 }

@@ -82,6 +82,7 @@ void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompa
     // 이 시점에서의 프로젝트 시작번호와 갯수
     int startId     = pCreator->m_orderTable[0][thisTime];
     int endId       = pCreator->m_orderTable[1][thisTime];
+    endId           += startId;
 
     for (int i = startId; i < endId ;i++) {
         pProject = &(pCreator->m_pProjects[0][i]);
