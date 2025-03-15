@@ -154,7 +154,7 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
 
     //2. 프로젝트 수익(인건비x기간x기술료비율), mode0의 인력 기록
     double expense      = (nHigh*m_env.higHrCost +  nMid*m_env.midHrCost + nLow*m_env.lowHrCost) * duration;    
-    int revenue         = (int)(expense * m_env.technicalFee)+expense; // 전체 이익은 기술료 비율만큼 크게
+    int revenue         = (int)(expense * m_env.technicalFee + expense); // 전체 이익은 기술료 비율만큼 크게
     pProject->revenue   = revenue;
     
     _MODE tempMode; //mode 0 
@@ -162,6 +162,7 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
     tempMode.higHrCount = nHigh;
     tempMode.midHrCount = nMid;
     tempMode.lowHrCount = nLow;
+    tempMode.fixedIncome = revenue; // 추후에 외부프로젝트의 경우 mode0 를 전부 복사하는 방법도 있을 수 있어서 표시만 해 놓는다.
     
     if (category == INTERNAL_PRJ) // 내부 프로젝트이면
     { 
@@ -183,7 +184,8 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
         tempMode.fixedIncome	= (int)(interRevenue / lifeCycle); // lifeCycle 동안 한 time에 얻는 수익
         tempMode.isPossible     = TRUE;
 
-        pProject->mode0 = tempMode;
+        pProject->mode0         = tempMode;
+        pProject->actMode       = tempMode;
 
 		//4. mode1을 위한 mu와 sigma, 수익 계산
         tempMode.higHrCount     = nHigh * 2;
@@ -239,8 +241,26 @@ void CCreator::SetInterActMode(int iRule)
     {
         PROJECT* pProject = &(m_pProjects[0][i]);
         if (INTERNAL_PRJ == pProject->category)
-        {
-            pProject->actMode = pProject->mode0;
+        {   
+            switch(iRule)
+            {
+                case 0: 
+                    pProject->actMode = pProject->mode0;
+                    //pProject->revenue = pProject->mode0.fixedIncome;
+                    break;
+                case 1:
+                    pProject->actMode = pProject->mode1;
+                    //pProject->revenue = pProject->mode1.fixedIncome;
+                    break;
+                case 2:
+                    pProject->actMode = pProject->mode2;
+                    //pProject->revenue = pProject->mode2.fixedIncome;
+                    break;                    
+                default : 
+                    pProject->actMode = pProject->mode0;
+                    //pProject->revenue = pProject->mode0.fixedIncome;
+                    break;
+            }
         }
     }
 }

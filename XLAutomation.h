@@ -52,6 +52,7 @@ public:
 	BOOL AddArgumentDouble(LPOLESTR lpszArgName, WORD wFlags, double d);
 	BOOL AddArgumentBool(LPOLESTR lpszArgName, WORD wFlags, BOOL b);
 	BOOL AddArgumentInt2(LPOLESTR lpszArgName, WORD wFlags, int i);
+	BOOL AddArgumentInt4(LPOLESTR lpszArgName, WORD wFlags, int i);
 	BOOL AddArgumentDispatch(LPOLESTR lpszArgName, WORD wFlags, IDispatch* pdisp);
 	void AddArgumentCommon(LPOLESTR lpszArgName, WORD wFlags, VARTYPE vt);
 	BOOL InitOLE();
@@ -67,6 +68,7 @@ public:
 	BOOL GetCellValueVariant(int sheet, int nRow, int nColumn, VARIANTARG* pValue); // 범용 함수 선언
 
 	// 셀에 값을 설정하는 함수들 (오버로딩)
+	BOOL SetCellValueShort(int sheet, int nRow, int nColumn, short value);
 	BOOL SetCellValueInt(int sheet, int nRow, int nColumn, int value);
 	BOOL SetCellValueCString(int sheet, int nRow, int nColumn, CString value);
 	BOOL SetCellValueDouble(int sheet, int nRow, int nColumn, double value);

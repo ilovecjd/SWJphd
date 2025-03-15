@@ -353,6 +353,7 @@ void CXLAutomation::ReleaseVariant(VARIANTARG *pvarg)
 			case VT_BOOL:
 			case VT_R8:
 			case VT_ERROR:		// to avoid erroring on an error return from Excel
+			case VT_I4:
 				// no work for these types
 				break;
 				
@@ -429,6 +430,12 @@ BOOL CXLAutomation::AddArgumentInt2(LPOLESTR lpszArgName, WORD wFlags, int i)
 	return TRUE;
 }
 
+BOOL CXLAutomation::AddArgumentInt4(LPOLESTR lpszArgName, WORD wFlags, int i)
+{
+	AddArgumentCommon(lpszArgName, wFlags, VT_I4);
+	m_aVargs[m_iArgCount++].lVal = i;
+	return TRUE;
+}
 
 BOOL CXLAutomation::AddArgumentBool(LPOLESTR lpszArgName, WORD wFlags, BOOL b)
 {
@@ -1160,6 +1167,36 @@ BOOL CXLAutomation::GetCellValueCString(int sheet, int nRow, int nColumn, CStrin
 }
 
 
+// SetCellValue for Short
+BOOL CXLAutomation::SetCellValueShort(int sheet, int nRow, int nColumn, short value)
+{
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// 해당 셀 범위 가져오기
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn); // Column
+	AddArgumentDouble(NULL, 0, nRow);    // Row
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// 셀 값 설정 (정수)
+	ClearAllArgs();
+	AddArgumentInt2(NULL, 0, value); // 정수 값을 설정
+	if (!ExlInvoke(vargRng.pdispVal, L"Value", NULL, DISPATCH_PROPERTYPUT, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	VariantClear(&vargRng);
+	return TRUE;
+}
+
+
 // SetCellValue for integer
 BOOL CXLAutomation::SetCellValueInt(int sheet, int nRow, int nColumn, int value)
 {
@@ -1178,7 +1215,7 @@ BOOL CXLAutomation::SetCellValueInt(int sheet, int nRow, int nColumn, int value)
 
 	// 셀 값 설정 (정수)
 	ClearAllArgs();
-	AddArgumentInt2(NULL, 0, value); // 정수 값을 설정
+	AddArgumentInt4(NULL, 0, value); // 정수 값을 설정
 	if (!ExlInvoke(vargRng.pdispVal, L"Value", NULL, DISPATCH_PROPERTYPUT, 0))
 	{
 		VariantClear(&vargRng);

@@ -142,7 +142,7 @@ BOOL CCompany::CheckLastWeek(int thisTime)
 			{
 				for (int i = 0 ; i < m_env.lifeCycle; i++)
 				{	
-					m_incomeTable[0][thisTime + i] += pProject->revenue; // revenue 는 선택된 모드의 fixedIncome
+					m_incomeTable[0][thisTime + i] += pProject->actMode.fixedIncome;
 				}			
 			}
 		}
@@ -166,7 +166,6 @@ void CCompany::SelectCandidates(int thisTime)
 		// 1. 이번 기간에 발생한것들중.
 		// 2. 외부는 인원이 가능한가?
 		// 3. 내부는 인원이 가능한 모드는 어느것인가?
-
 		if(pProject->createTime == thisTime)
 		{
 			if (IsEnoughHR_ActMode(thisTime, pProject)) // 인원 체크			
