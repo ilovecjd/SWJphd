@@ -93,6 +93,9 @@ public:
 	BOOL SaveAndCloseExcelFile(CString szFileName);
 	BOOL ClearSheetContents(int sheet);
 	BOOL CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
+
+	// 수식을 넣는 함수
+	BOOL SetCellFormula(int sheet, int nRow, int nColumn, CString formula);
 	// 자동화 헬퍼 함수
 	//song
 

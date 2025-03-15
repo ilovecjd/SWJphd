@@ -2193,3 +2193,32 @@ BOOL CXLAutomation::CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], i
 	}
 	return TRUE;
 }
+
+
+BOOL CXLAutomation::SetCellFormula(int sheet, int nRow, int nColumn, CString formula)
+{
+	if (sheet < 0 || sheet >= m_pdispWorksheets.size() || m_pdispWorksheets[sheet] == NULL)
+		return FALSE;
+
+	VARIANTARG vargRng;
+	VariantInit(&vargRng);
+
+	// 해당 셀 객체를 가져옵니다.
+	ClearAllArgs();
+	AddArgumentDouble(NULL, 0, nColumn); // 열
+	AddArgumentDouble(NULL, 0, nRow);    // 행
+	if (!ExlInvoke(m_pdispWorksheets[sheet], L"Cells", &vargRng, DISPATCH_PROPERTYGET, DISP_FREEARGS))
+		return FALSE;
+
+	// "Formula" 속성에 수식을 할당합니다.
+	ClearAllArgs();
+	AddArgumentCString(NULL, 0, formula);
+	if (!ExlInvoke(vargRng.pdispVal, L"Formula", NULL, DISPATCH_PROPERTYPUT, 0))
+	{
+		VariantClear(&vargRng);
+		return FALSE;
+	}
+
+	ReleaseVariant(&vargRng);
+	return TRUE;
+}

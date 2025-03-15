@@ -41,6 +41,15 @@ CSWJphdDlg::~CSWJphdDlg()
 	//  대화 상자가 삭제되었음을 알 수 있게 합니다.
 	if (m_pAutoProxy != nullptr)
 		m_pAutoProxy->m_pDialog = nullptr;
+
+	if (NULL != m_pCreator)	
+		delete m_pCreator;
+
+	if (NULL != m_pSaveXl)
+		delete m_pSaveXl;
+
+	if (NULL != m_pCompany)
+		delete m_pCompany;
 }
 
 void CSWJphdDlg::DoDataExchange(CDataExchange* pDX)
@@ -286,7 +295,8 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.higHrCost);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.midHrCost);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.lowHrCost);		i++;
-
+	
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.fundsHoldTerm);	i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.initialFunds);	i++;
 
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.extPrjInTime);	i++;
@@ -324,6 +334,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	SetDlgItemInt(IDC_EDIT_MID_COST, m_gEnv.midHrCost);
 	SetDlgItemInt(IDC_EDIT_LOW_COST, m_gEnv.lowHrCost);
 
+	SetDlgItemInt(IDC_EDIT_FUND_RATE, m_gEnv.fundsHoldTerm);
 	SetDlgItemInt(IDC_EDIT_INI_FUNDS,	m_gEnv.initialFunds);
 
 	strTemp.Format(_T("%.2f"), m_gEnv.extPrjInTime);
@@ -357,7 +368,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 
 	// 버튼 활성화
 	GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(TRUE);
-	//GetDlgItem(IDC_BUTTON1)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BTN_ENV_SAVE)->EnableWindow(TRUE);
 	
 	//PrintAllProject(&m_pCreator);
 
@@ -430,7 +441,7 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
 		xlAuto.SetCellValue(0, i + 2, j, pProject->mode2.fixedIncome);	j++;
     }
 
-    // 엑셀 파일 닫기
+    // 엑셀 파일 닫기	
     xlAuto.ReleaseExcel();
 }
 
@@ -534,6 +545,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 	m_gEnv.midHrCost	= GetDlgItemInt(IDC_EDIT_MID_COST);
 	m_gEnv.lowHrCost	= GetDlgItemInt(IDC_EDIT_LOW_COST);
 
+	m_gEnv.fundsHoldTerm = GetDlgItemInt(IDC_EDIT_FUND_RATE);
 	m_gEnv.initialFunds	= GetDlgItemInt(IDC_EDIT_INI_FUNDS);
 
 	GetDlgItemText(IDC_EDIT_EX_PROBABILITY, strTemp);
@@ -555,16 +567,16 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 	m_gEnv.mu0Rate		= GetDlgItemInt(IDC_EDIT_MU0);
 	m_gEnv.sigma0Rate	= GetDlgItemInt(IDC_EDIT_SIGMA0);
 		
-	SetDlgItemText(IDC_EDIT_MU1, strTemp);
+	GetDlgItemText(IDC_EDIT_MU1, strTemp);
 	m_gEnv.mu1Rate		= _tstof(strTemp);
 		
-	SetDlgItemText(IDC_EDIT_SIGMA1, strTemp);
+	GetDlgItemText(IDC_EDIT_SIGMA1, strTemp);
 	m_gEnv.sigma1Rate	= _tstof(strTemp);
 		
-	SetDlgItemText(IDC_EDIT_MU2, strTemp);
+	GetDlgItemText(IDC_EDIT_MU2, strTemp);
 	m_gEnv.mu2Rate		= _tstof(strTemp);
 		
-	SetDlgItemText(IDC_EDIT_SIGMA2, strTemp);
+	GetDlgItemText(IDC_EDIT_SIGMA2, strTemp);
 	m_gEnv.sigma2Rate	= _tstof(strTemp);
 
 	// 엑셀 파일 열기
@@ -574,6 +586,30 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 		AfxMessageBox(_T("환경변수 파일을 열수 없습니다."));
 		return;
 	}
+
 	SaveGenv(&xlGEnv, 0, &m_gEnv, TRUE);
+
+	xlGEnv.GetCellValue(WS_NUM_GENV, 8, 3, &m_gEnv.maxPeriod);
+	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_gEnv.maxPeriod);
+
+	xlGEnv.GetCellValue(WS_NUM_GENV, 17, 3, &m_gEnv.initialFunds);
+	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_gEnv.initialFunds);
+		
 	xlGEnv.ReleaseExcel();
+
+
+	if (NULL != m_pCreator ){
+		delete m_pCreator;
+		m_pCreator = NULL;
+	}
+
+	if (NULL != m_pSaveXl) {
+		delete m_pSaveXl;
+		m_pSaveXl = NULL;
+	}
+
+	if (NULL != m_pCompany) {
+		delete m_pCompany;
+		m_pCompany = NULL;
+	}
 }

@@ -184,3 +184,8 @@ BOOL CXLEzAutomation::CreateExcelFile(CString szFileName, LPOLESTR sheetsName[],
 {
 	return m_pXLServer->CreateExcelFile(szFileName, sheetsName, nSheetCount);
 }
+
+BOOL CXLEzAutomation::SetCellFormula(int sheet, int nRow, int nColumn, CString formula)
+{
+	return m_pXLServer->SetCellFormula(sheet, nRow, nColumn, formula);
+}

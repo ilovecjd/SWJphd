@@ -67,7 +67,8 @@ struct GLOBAL_ENV {
 	int		midHrCost;		// 중급자 인건비(기간당)
 	int		lowHrCost;		// 초급자 인건비(기간당)
 
-	int		initialFunds;	//최초에 보유한 자금 (6개월 유지비)
+	int		fundsHoldTerm;	// 자금 보유 기간 (몇개월간의 자본금을 가지고 시작할 것인가?)
+	int		initialFunds;	// 최초 보유한 자금  ==> fundHoldTerm 개월 유지비
 
 	double	extPrjInTime;	// 기간내 평균적으로 발생하는 외부프로젝트의 갯수
 	double	intPrjInTime;	// 기간내 평균적으로 발생하는 내부프로젝트의 갯수

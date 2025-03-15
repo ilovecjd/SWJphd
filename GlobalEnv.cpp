@@ -167,6 +167,13 @@ void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFil
     int row = 0;
     int col = 1;
 
+    SYSTEMTIME st;
+    GetLocalTime(&st);  // 현재 로컬 날짜와 시간 얻기
+
+    CString strDate, strTime;
+    strDate.Format(_T("%04d-%02d-%02d"), st.wYear, st.wMonth, st.wDay);   // 예: "2025-03-07"
+    strTime.Format(_T("%02d시%02d분%02d초"), st.wHour, st.wMinute, st.wSecond); // 예: "12시30분03초"
+
     //if (!isEnvFile)
     pSaveXl->SetCellValue(sheet, 3, 1, _T("* 문제에 사용할 데이터를 생성한다."));
     pSaveXl->SetCellValue(sheet, 4, 1, _T("* 생성하는 데이터를 위한 기초정보를 기록한다."));
@@ -176,13 +183,19 @@ void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFil
     pSaveXl->SetCellValue(sheet, 10,1, _T("기본환경"));
     pSaveXl->SetCellValue(sheet, 17,1, _T("프로젝트생성정보"));
     pSaveXl->SetCellValue(sheet, 22,1, _T("모드생성정보"));
-    pSaveXl->SetCellValue(sheet, 5, 2, _T("2025-03-07"));
+    pSaveXl->SetCellValue(sheet, 5, 2, strDate);
+    pSaveXl->SetCellValue(sheet, 5, 3, strTime);
 
     row = 7;
     col = 2;
     
-    pSaveXl->SetCellValue(sheet, row, col++, _T("simulationPeriod")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->simulationPeriod); pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션의 기간(12개월 x 5년 = 60 개월)")); row++; col = 2;
-    pSaveXl->SetCellValue(sheet, row, col++, _T("maxPeriod")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->maxPeriod); pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션 종료 이후의 값들도 추적하기 위해(simulationPeriod x 2)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("simulationPeriod")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->simulationPeriod); pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션의 기간(12개월 x 5년 = 60 개월)")); row++; col = 2;    
+    pSaveXl->SetCellValue(sheet, row, col++, _T("maxPeriod")); 
+
+    if (isEnvFile)  {   pSaveXl->SetCellFormula(sheet, row, col++, _T("=C7+24"));   }
+    else            {   pSaveXl->SetCellValue(sheet, row, col++, pEnv->maxPeriod);  }
+
+    pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션 종료 이후의 값들도 추적하기 위해(simulationPeriod x 2)")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("technicalFee")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->technicalFee); pSaveXl->SetCellValue(sheet, row, col++, _T("인건비대비 기술료율(총수익을 구할때 사용)")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("higHrCount")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->higHrCount); pSaveXl->SetCellValue(sheet, row, col++, _T("최초에 보유한 고급 인력")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("midHrCount")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->midHrCount); pSaveXl->SetCellValue(sheet, row, col++, _T("최초에 보유한 중급 인력")); row++; col = 2;
@@ -190,7 +203,13 @@ void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFil
     pSaveXl->SetCellValue(sheet, row, col++, _T("higHrCost")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->higHrCost); pSaveXl->SetCellValue(sheet, row, col++, _T("고급자 인건비(기간당)")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("midHrCost")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->midHrCost); pSaveXl->SetCellValue(sheet, row, col++, _T("중급자 인건비(기간당)")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("lowHrCost")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->lowHrCost); pSaveXl->SetCellValue(sheet, row, col++, _T("초급자 인건비(기간당)")); row++; col = 2;
-    pSaveXl->SetCellValue(sheet, row, col++, _T("initialFunds")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->initialFunds); pSaveXl->SetCellValue(sheet, row, col++, _T("최초 보유한 자금 ==> 6개월 유지비")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("fundsHoldTerm")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->fundsHoldTerm); pSaveXl->SetCellValue(sheet, row, col++, _T("자금 보유 기간 (몇개월간의 자본금을 가지고 시작할 것인가?)")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("initialFunds"));
+
+    if(isEnvFile)   {   pSaveXl->SetCellFormula(sheet, row, col++, _T("=SUMPRODUCT(C10:C12,C13:C15)*C16"));    }
+    else            {   pSaveXl->SetCellValue(sheet, row, col++, pEnv->fundsHoldTerm);                          }
+
+    pSaveXl->SetCellValue(sheet, row, col++, _T("최초 보유한 자금  ==> fundHoldTerm 개월 유지비")); row++; col = 2;        
     pSaveXl->SetCellValue(sheet, row, col++, _T("extPrjInTime")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->extPrjInTime); pSaveXl->SetCellValue(sheet, row, col++, _T("기간내 발생하는 평균 발주 프로젝트 수(포아송분포로)")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("intPrjInTime")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->intPrjInTime); pSaveXl->SetCellValue(sheet, row, col++, _T("기간내 발생하는 평균 내부 프로젝트 수(포아송분포로)")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("minDuration")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->minDuration); pSaveXl->SetCellValue(sheet, row, col++, _T("외부 프로젝트 최소 기간")); row++; col = 2;

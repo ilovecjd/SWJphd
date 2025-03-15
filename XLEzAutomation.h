@@ -54,6 +54,8 @@ public:
 
 	BOOL CreateExcelFile(CString szFileName, LPOLESTR sheetsName[], int nSheetCount);
 
+	BOOL SetCellFormula(int sheet, int nRow, int nColumn, CString formula);
+
 	CXLEzAutomation();
 	CXLEzAutomation(BOOL bVisible);
 	virtual ~CXLEzAutomation();
