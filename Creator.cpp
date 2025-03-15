@@ -154,7 +154,7 @@ int CCreator::MakeModeAndRevenue(PROJECT* pProject, int duration, int category)
 
     //2. 프로젝트 수익(인건비x기간x기술료비율), mode0의 인력 기록
     double expense      = (nHigh*m_env.higHrCost +  nMid*m_env.midHrCost + nLow*m_env.lowHrCost) * duration;    
-    int revenue         = (int)(expense * m_env.technicalFee); // 전체 이익은 기술료 비율만큼 크게
+    int revenue         = (int)(expense * m_env.technicalFee)+expense; // 전체 이익은 기술료 비율만큼 크게
     pProject->revenue   = revenue;
     
     _MODE tempMode; //mode 0 

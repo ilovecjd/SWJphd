@@ -54,9 +54,9 @@ BEGIN_MESSAGE_MAP(CSWJphdDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_ENV_OPEN, &CSWJphdDlg::OnBnClickedBtnEnvOpen)
 	ON_BN_CLICKED(IDC_BTN_SAVE_FILE_NAME, &CSWJphdDlg::OnBnClickedBtnSaveFileName)
-	ON_BN_CLICKED(IDC_BTN_ENV_LOAD, &CSWJphdDlg::OnBnClickedBtnEnvLoad)
-	ON_BN_CLICKED(IDC_BUTTON1, &CSWJphdDlg::OnBnClickedButton1)	
+	ON_BN_CLICKED(IDC_BTN_ENV_LOAD, &CSWJphdDlg::OnBnClickedBtnEnvLoad)	
 	ON_BN_CLICKED(IDC_BTN_STEP_BY_STEP, &CSWJphdDlg::OnBnClickedBtnStepByStep)
+	ON_BN_CLICKED(IDC_BTN_ENV_SAVE, &CSWJphdDlg::OnBnClickedBtnEnvSave)
 END_MESSAGE_MAP()
 
 
@@ -81,7 +81,7 @@ BOOL CSWJphdDlg::OnInitDialog()
 	
 	// 버튼 비활성화
 	GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
-	GetDlgItem(IDC_BUTTON1)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BTN_ENV_SAVE)->EnableWindow(FALSE);
 
 	// 컨트롤 변수와 연결
 	m_editEnvFilePath.SubclassDlgItem(IDC_EDIT_ENV_FILE_PATH, this);
@@ -221,9 +221,9 @@ void CSWJphdDlg::SaveFilePathToRegistry()
 
 void CSWJphdDlg::OnBnClickedBtnEnvOpen()
 {
-	// 파일 선택 다이얼로그 필터 설정 (xlsx 파일만)
+	// 파일 선택 다이얼로그 필터 설정 (xlsx, xlsm 파일만)
 	CFileDialog fileDlg(TRUE, _T("xlsx"), nullptr, OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
-		_T("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*||"), this);
+		_T("Excel Files (*.xlsx;*.xlsm)|*.xlsx;*.xlsm|All Files (*.*)|*.*||"), this);
 
 	// 다이얼로그 표시
 	if (fileDlg.DoModal() == IDOK)
@@ -238,9 +238,9 @@ void CSWJphdDlg::OnBnClickedBtnEnvOpen()
 
 void CSWJphdDlg::OnBnClickedBtnSaveFileName()
 {
-	// 파일 선택 다이얼로그 필터 설정 (xlsx 파일만)
+	// 파일 선택 다이얼로그 필터 설정 (xlsx, xlsm 파일만)
 	CFileDialog fileDlg(TRUE, _T("xlsx"), nullptr, OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
-		_T("Excel Files (*.xlsx)|*.xlsx|All Files (*.*)|*.*||"), this);
+		_T("Excel Files (*.xlsx;*.xlsm)|*.xlsx;*.xlsm|All Files (*.*)|*.*||"), this);
 
 	// 다이얼로그 표시
 	if (fileDlg.DoModal() == IDOK)
@@ -507,7 +507,7 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 
 		m_pSaveXl->ClearSheetContents(WS_NUM_DASHBOARD);
 		PrintDBoardHeader(m_pSaveXl, WS_NUM_DASHBOARD);
-		PrintGenv(m_pSaveXl, WS_NUM_GENV, m_pCreator);
+		SaveGenv(m_pSaveXl, WS_NUM_GENV, &(m_pCreator->m_env),FALSE);// 환경 변수 저장
 	}
 
 	// 기간이 다 될때 까지
@@ -515,7 +515,7 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 	{
 		if (FALSE == m_pCompany->Decision(m_stepByStepCnt))  // 이번 스탭의 기간에 결정해야 할 일들			
 		{
-			GetDlgItem(IDC_BUTTON1)->EnableWindow(TRUE);
+			GetDlgItem(IDC_BTN_ENV_SAVE)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
 
 			PrintOneTime(m_pSaveXl, m_pCreator, m_pCompany, m_stepByStepCnt);
@@ -535,9 +535,15 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 	if (m_pCompany->m_env.maxPeriod <= m_stepByStepCnt)
 	{	
 		m_stepByStepCnt = -1;
-		GetDlgItem(IDC_BUTTON1)->EnableWindow(TRUE);
+		GetDlgItem(IDC_BTN_ENV_SAVE)->EnableWindow(TRUE);
 		GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
 		return;
 	}
 	m_stepByStepCnt ++;
+}
+
+
+void CSWJphdDlg::OnBnClickedBtnEnvSave()
+{
+	
 }

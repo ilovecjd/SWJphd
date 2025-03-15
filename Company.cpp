@@ -52,9 +52,12 @@ BOOL CCompany::Init()
 	}
 	
 	m_expensesTable.Clear(expense);// 고정비용 나가고
-	m_doingTable.Clear(-1); // 하는일은 없고
+	m_doingTable.Clear(-1); // 하는일은 없고	
 	m_incomeTable.Clear(0); // 들어올돈 없고
 	m_balanceTable.Clear(0); // checkLastWeek 함수에서 자금 상황 체크용으로 사용함
+	
+	for(int i = 0; i< m_doingTable.getCols(); i++)
+		m_doingTable[0][i] = 0;
 	m_balanceTable[0][0]	= m_env.initialFunds; //
 	
     return TRUE;
@@ -121,7 +124,7 @@ BOOL CCompany::CheckLastWeek(int thisTime)
 		return FALSE;
 
 	//지난주에 진행 중이던 프로젝트의 갯수
-	int nLastProjects = m_doingTable[ORDER_SUM][thisTime - 1];
+	int nLastProjects = m_doingTable[0][thisTime - 1];
 
 	// 외부는 무시, 내부는 종료되었으면 자금 테이블 갱신
 	for (int i = 0; i < nLastProjects; i++)
@@ -166,16 +169,8 @@ void CCompany::SelectCandidates(int thisTime)
 
 		if(pProject->createTime == thisTime)
 		{
-			//if ((pProject->category == EXTERNAL_PRJ))  // 외부 프로젝트
-			//{
-				if (IsEnoughHR_ActMode(thisTime, pProject)) // 인원 체크			
-					m_candidateTable[j++] = pProject->ID;
-			//}
-			//else  //내부프로젝트
-			//{
-				//if (IsEnoughHR_ActMode(thisTime, pProject)) // 내부 프로젝트 인원 체크			
-					//m_candidateTable[j++] = pProject->ID;
-			//}
+			if (IsEnoughHR_ActMode(thisTime, pProject)) // 인원 체크			
+				m_candidateTable[j++] = pProject->ID;
 		}
 	}
 }
@@ -209,106 +204,106 @@ BOOL CCompany::IsEnoughHR_ActMode(int thisTime, PROJECT* pProject)
 }
 
 
-// 외부 프로젝트의 인원 체크
-BOOL CCompany::IsEnoughHR(int thisTime, PROJECT* pProject)
-{
-	// 원본 인력 테이블을 복사해서 프로젝트 인력을 추가 할 수 있는지 확인한다.
-	Dynamic2DArray doingHR = m_doingHR;
-	int endTime = pProject->endTime;
+//// 외부 프로젝트의 인원 체크
+//BOOL CCompany::IsEnoughHR(int thisTime, PROJECT* pProject)
+//{
+//	// 원본 인력 테이블을 복사해서 프로젝트 인력을 추가 할 수 있는지 확인한다.
+//	Dynamic2DArray doingHR = m_doingHR;
+//	int endTime = pProject->endTime;
+//
+//	for (int i = thisTime; i <= endTime; i++)
+//	{
+//		doingHR[HR_HIG][i]	+= pProject->mode0.higHrCount;
+//		doingHR[HR_MID][i]	+= pProject->mode0.midHrCount;
+//		doingHR[HR_LOW][i]	+= pProject->mode0.lowHrCount;
+//	}
+//
+//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	{
+//		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
+//			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
+//			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
+//		{
+//			pProject->mode0.isPossible = FALSE;
+//			return FALSE;
+//		}
+//	}
+//	// 외부 프로젝트는 MODE0 만 사용한다.
+//	return TRUE;
+//}
 
-	for (int i = thisTime; i <= endTime; i++)
-	{
-		doingHR[HR_HIG][i]	+= pProject->mode0.higHrCount;
-		doingHR[HR_MID][i]	+= pProject->mode0.midHrCount;
-		doingHR[HR_LOW][i]	+= pProject->mode0.lowHrCount;
-	}
 
-	for (int i = thisTime; i < m_env.maxPeriod; i++)
-	{
-		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
-			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
-			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
-		{
-			pProject->mode0.isPossible = FALSE;
-			return FALSE;
-		}
-	}
-	// 외부 프로젝트는 MODE0 만 사용한다.
-	return TRUE;
-}
-
-
-// 내부 프로젝트를 위해 투입할 인원 체크
-BOOL CCompany::IsInternalEnoughHR(int thisTime, PROJECT* pProject)
-{
-	// 원본 인력 테이블을 복사해서 프로젝트 인력을 추가 할 수 있는지 확인한다.
-	Dynamic2DArray doingHR = m_doingHR;
-	int endTime = pProject->endTime;
-
-	for (int i = thisTime; i <= endTime; i++)
-	{
-		doingHR[HR_HIG][i] += pProject->mode0.higHrCount;
-		doingHR[HR_MID][i] += pProject->mode0.midHrCount;
-		doingHR[HR_LOW][i] += pProject->mode0.lowHrCount;
-	}
-
-	for (int i = thisTime; i < m_env.maxPeriod; i++)
-	{
-		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
-			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
-			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
-		{
-			pProject->mode0.isPossible = FALSE;
-		}
-	}
-
-	doingHR = m_doingHR;
-
-	for (int i = thisTime; i <= endTime; i++)
-	{
-		doingHR[HR_HIG][i] += pProject->mode1.higHrCount;
-		doingHR[HR_MID][i] += pProject->mode1.midHrCount;
-		doingHR[HR_LOW][i] += pProject->mode1.lowHrCount;
-	}
-
-	for (int i = thisTime; i < m_env.maxPeriod; i++)
-	{
-		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
-			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
-			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
-		{
-			pProject->mode1.isPossible = FALSE;
-		}
-	}
-
-	doingHR = m_doingHR;
-
-	for (int i = thisTime; i <= endTime; i++)
-	{
-		doingHR[HR_HIG][i] += pProject->mode2.higHrCount;
-		doingHR[HR_MID][i] += pProject->mode2.midHrCount;
-		doingHR[HR_LOW][i] += pProject->mode2.lowHrCount;
-	}
-
-	for (int i = thisTime; i < m_env.maxPeriod; i++)
-	{
-		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
-			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
-			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
-		{
-			pProject->mode2.isPossible = FALSE;
-		}
-	}
-
-	if (pProject->mode0.isPossible == FALSE &&
-		pProject->mode1.isPossible == FALSE &&
-		pProject->mode2.isPossible == FALSE)
-	{
-		return FALSE;
-	}
-	
-	return TRUE;// 하나의 모드라도 진행가능하면 TRUE
-}
+//// 내부 프로젝트를 위해 투입할 인원 체크
+//BOOL CCompany::IsInternalEnoughHR(int thisTime, PROJECT* pProject)
+//{
+//	// 원본 인력 테이블을 복사해서 프로젝트 인력을 추가 할 수 있는지 확인한다.
+//	Dynamic2DArray doingHR = m_doingHR;
+//	int endTime = pProject->endTime;
+//
+//	for (int i = thisTime; i <= endTime; i++)
+//	{
+//		doingHR[HR_HIG][i] += pProject->mode0.higHrCount;
+//		doingHR[HR_MID][i] += pProject->mode0.midHrCount;
+//		doingHR[HR_LOW][i] += pProject->mode0.lowHrCount;
+//	}
+//
+//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	{
+//		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
+//			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
+//			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
+//		{
+//			pProject->mode0.isPossible = FALSE;
+//		}
+//	}
+//
+//	doingHR = m_doingHR;
+//
+//	for (int i = thisTime; i <= endTime; i++)
+//	{
+//		doingHR[HR_HIG][i] += pProject->mode1.higHrCount;
+//		doingHR[HR_MID][i] += pProject->mode1.midHrCount;
+//		doingHR[HR_LOW][i] += pProject->mode1.lowHrCount;
+//	}
+//
+//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	{
+//		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
+//			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
+//			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
+//		{
+//			pProject->mode1.isPossible = FALSE;
+//		}
+//	}
+//
+//	doingHR = m_doingHR;
+//
+//	for (int i = thisTime; i <= endTime; i++)
+//	{
+//		doingHR[HR_HIG][i] += pProject->mode2.higHrCount;
+//		doingHR[HR_MID][i] += pProject->mode2.midHrCount;
+//		doingHR[HR_LOW][i] += pProject->mode2.lowHrCount;
+//	}
+//
+//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	{
+//		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
+//			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
+//			m_totalHR[HR_LOW][i] < doingHR[HR_LOW][i])
+//		{
+//			pProject->mode2.isPossible = FALSE;
+//		}
+//	}
+//
+//	if (pProject->mode0.isPossible == FALSE &&
+//		pProject->mode1.isPossible == FALSE &&
+//		pProject->mode2.isPossible == FALSE)
+//	{
+//		return FALSE;
+//	}
+//	
+//	return TRUE;// 하나의 모드라도 진행가능하면 TRUE
+//}
 
 
 // 후보군들을 선택 정책에 따라서 순서를 변경한다.
@@ -434,7 +429,7 @@ void CCompany::SelectNewProject(int thisTime)
 		//{			
 			if (pProject->startAbleTime < m_env.maxPeriod)
 			{
-				if (IsEnoughHR(thisTime, pProject))
+				if (IsEnoughHR_ActMode(thisTime, pProject))
 				{
 					AddProjectEntry(pProject, thisTime);
 				}

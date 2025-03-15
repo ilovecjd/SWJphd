@@ -75,4 +75,5 @@ public:
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnEnChangeEditMaxDuration();
 	afx_msg void OnBnClickedBtnStepByStep();
+	afx_msg void OnBnClickedBtnEnvSave();
 };

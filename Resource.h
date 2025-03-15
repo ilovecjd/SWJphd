@@ -16,7 +16,7 @@
 #define IDC_EDIT_LOW_HR                 1008
 #define IDC_EDIT_INI_FUNDS              1009
 #define IDC_EDIT_IN_PROBABILITY         1010
-#define IDC_BUTTON1                     1011
+#define IDC_BTN_ENV_SAVE                1011
 #define IDC_EDIT_TECH_FEE               1012
 #define IDC_EDIT_HIG_COST               1013
 #define IDC_EDIT_MID_COST               1014
@@ -25,7 +25,7 @@
 #define IDC_EDIT_EX_PROBABILITY         1017
 #define IDC_EDIT_MAX_DURATION           1018
 #define IDC_EDIT_MIN_DURATION           1019
-#define IDC_EDIT_IN_PROBABILITY2        1022
+#define IDC_EDIT_FUND_RATE              1022
 #define IDC_EDIT_MAX_MODE               1023
 #define IDC_EDIT_MIN_MODE               1024
 #define IDC_EDIT_PROFIT_RATE            1025

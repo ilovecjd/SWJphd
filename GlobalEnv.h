@@ -12,16 +12,6 @@ class CXLEzAutomation;
 class CCreator;
 class CCompany;
 
-void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompany, int thisTime);
-
-void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum);
-
-void PrintOneProject(CXLEzAutomation* pSaveXl, CCreator* pCreator, int thisTime);
-void PrintOneDashBoard(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime);
-void PrintGenv(CXLEzAutomation* pSaveXl, int sheet,CCreator* pCreator);
-
-void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum);
-void PrintDashBoard(CXLEzAutomation* pSaveXl, int sheet, CCompany* pCompany, CCreator* pCreator, int thisTime);
 
 #endif // GLOBAL_ENV_H
 
@@ -292,7 +282,15 @@ int RandomBetween(int low, int high);
 // 일반 정규분포의 역함수 p: (0,1) 사이의 확률값 mu: 평균, sigma: 표준편차
 double InverseNormal(double p, double mu, double sigma);
 
+void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum);
+void PrintOneTime(CXLEzAutomation* pSaveXl, CCreator* pCreator, CCompany* pCompany, int thisTime);
+void PrintOneProject(CXLEzAutomation* pSaveXl, CCreator* pCreator, int thisTime);
 
+void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum);
+void PrintOneDashBoard(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime);
+void PrintDashBoard(CXLEzAutomation* pSaveXl, int sheet, CCompany* pCompany, CCreator* pCreator, int thisTime);
+
+void SaveGenv(CXLEzAutomation* pSaveXl, int sheet, GLOBAL_ENV* pEnv, BOOL isEnvFile);
 
 /*
 일자 	2025-03-03						

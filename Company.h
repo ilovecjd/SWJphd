@@ -52,8 +52,8 @@ private:
 	BOOL CheckLastWeek(int thisWeek);
 	void SelectCandidates(int thisWeek);
 	BOOL IsEnoughHR_ActMode(int thisTime, PROJECT* pProject);
-	BOOL IsEnoughHR(int thisWeek, PROJECT* project);
-	BOOL IsInternalEnoughHR(int thisTime, PROJECT* pProject); // 내부 프로젝트 인원 체크	
+	//BOOL IsEnoughHR(int thisWeek, PROJECT* project);
+	//BOOL IsInternalEnoughHR(int thisTime, PROJECT* pProject); // 내부 프로젝트 인원 체크	
 	//BOOL IsIntenalEnoughtNextWeekHR(int thisWeek, PROJECT* project);// 이번주 내부 프로젝트 인원 체크	
 	void SelectNewProject(int thisWeek);
 	

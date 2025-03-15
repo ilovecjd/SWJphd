@@ -160,12 +160,13 @@ void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum)
 }
 
 
-void PrintGenv(CXLEzAutomation* pSaveXl,int sheet, CCreator* pCreator )
-{
-    GLOBAL_ENV* pEnv = &(pCreator->m_env);
+// is EvnFile : 환경변수 파일이면 true, 결과물 파일이면 fasle
+void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFile )
+{    
     int row = 0;
     int col = 1;
 
+    //if (!isEnvFile)
     pSaveXl->SetCellValue(sheet, 3, 1, _T("* 문제에 사용할 데이터를 생성한다."));
     pSaveXl->SetCellValue(sheet, 4, 1, _T("* 생성하는 데이터를 위한 기초정보를 기록한다."));
     pSaveXl->SetCellValue(sheet, 5, 1, _T("* 일자"));
