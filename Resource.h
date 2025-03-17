@@ -36,6 +36,9 @@
 #define IDC_EDIT_MU1                    1030
 #define IDC_EDIT_SIGMA2                 1031
 #define IDC_EDIT_MU2                    1032
+#define IDC_EDIT_PROBLEM_COUNT          1035
+#define IDC_EDIT_SELECT_MODE            1036
+#define ID_EDIT_SELECT_MODE             1036
 
 // Next default values for new objects
 // 
@@ -43,7 +46,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1017
+#define _APS_NEXT_CONTROL_VALUE         1021
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

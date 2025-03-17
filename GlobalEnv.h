@@ -54,6 +54,8 @@ int PoissonRandom(double lambda);
 
 struct GLOBAL_ENV {
 	//// 전역적인 환경	
+	int		problemCount;
+	int		selectedMode;
 	int		simulationPeriod;
 	int		maxPeriod; // 시뮬레이션 종료 이후의 값들도 추적하기 위해	
 	double	technicalFee;	// 인건비대비 기술료율 (총수익을 구할때 사용)

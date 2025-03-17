@@ -95,10 +95,9 @@ BOOL CSWJphdDlg::OnInitDialog()
 	// 컨트롤 변수와 연결
 	m_editEnvFilePath.SubclassDlgItem(IDC_EDIT_ENV_FILE_PATH, this);
 	m_editSaveFilePath.SubclassDlgItem(IDC_EDIT_SAVE_FILE_PATH, this);
-
+	
 	// 레지스트리에서 파일 경로 읽기
 	LoadFilePathFromRegistry();
-
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -284,6 +283,8 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	}
 
 	int i = 7;	// Global 환경변수 가져오기
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.problemCount);	i++;
+	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.selectedMode);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.simulationPeriod);	i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.maxPeriod);		i++;
 	xlAuto.GetCellValue(WS_NUM_GENV, i, 3, &m_gEnv.technicalFee);	i++;
@@ -322,6 +323,10 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 
 	// Global 환경 변수 값들을 엑셀파일에 있는 값으로 업데이트 한다.
 	CString strTemp;
+
+	SetDlgItemInt(IDC_EDIT_PROBLEM_COUNT, m_gEnv.problemCount);
+	SetDlgItemInt(ID_EDIT_SELECT_MODE, m_gEnv.selectedMode);
+
 	SetDlgItemInt(IDC_EDIT_SIM_PERIOD,	m_gEnv.simulationPeriod);
 	strTemp.Format(_T("%.2f"), m_gEnv.technicalFee);  //
 	SetDlgItemText(IDC_EDIT_TECH_FEE, strTemp);
@@ -369,9 +374,6 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	// 버튼 활성화
 	GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(TRUE);
 	GetDlgItem(IDC_BTN_ENV_SAVE)->EnableWindow(TRUE);
-	
-	//PrintAllProject(&m_pCreator);
-
 }
 
 void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
@@ -400,7 +402,7 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
     for (int i =0; i <nPrjCnt; i++)
     {
         PROJECT* pProject = &(pCreator->m_pProjects[0][i]);
-        int j = 1 ;
+        int j = 1 ;		
         xlAuto.SetCellValue(0, i + 2, j, pProject->category);			j++;
         xlAuto.SetCellValue(0, i + 2, j, pProject->ID);					j++;
         xlAuto.SetCellValue(0, i + 2, j, pProject->createTime);			j++;
@@ -476,6 +478,7 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 		}
 		m_pCreator = new CCreator;
 		m_pCreator->Init(&m_gEnv);
+		m_pCreator->SetInterActMode(m_gEnv.selectedMode);
 
 		if (NULL != m_pCompany)
 		{
@@ -532,6 +535,8 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 	// Global 환경 변수 값들을 엑셀파일로 저장한다.
 	CString strTemp;
 	
+	m_gEnv.problemCount	= GetDlgItemInt(IDC_EDIT_PROBLEM_COUNT);
+	m_gEnv.selectedMode	= GetDlgItemInt(IDC_EDIT_SELECT_MODE);
 	m_gEnv.simulationPeriod = GetDlgItemInt(IDC_EDIT_SIM_PERIOD);
 	
 	GetDlgItemText(IDC_EDIT_TECH_FEE, strTemp);
@@ -594,7 +599,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 
 	xlGEnv.GetCellValue(WS_NUM_GENV, 17, 3, &m_gEnv.initialFunds);
 	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_gEnv.initialFunds);
-		
+	xlGEnv.SaveAndCloseExcelFile(m_strEnvFilePath);
 	xlGEnv.ReleaseExcel();
 
 
@@ -612,4 +617,8 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 		delete m_pCompany;
 		m_pCompany = NULL;
 	}
+
+	m_stepByStepCnt = -1;
+	GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
 }
+

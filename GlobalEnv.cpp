@@ -189,10 +189,12 @@ void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFil
     row = 7;
     col = 2;
     
+    pSaveXl->SetCellValue(sheet, row, col++, _T("problemCount")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->problemCount); pSaveXl->SetCellValue(sheet, row, col++, _T("실험 횟수")); row++; col = 2;
+    pSaveXl->SetCellValue(sheet, row, col++, _T("selectedMode")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->selectedMode); pSaveXl->SetCellValue(sheet, row, col++, _T("모드 선택(Mode0 ~Mode3)")); row++; col = 2;    
     pSaveXl->SetCellValue(sheet, row, col++, _T("simulationPeriod")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->simulationPeriod); pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션의 기간(12개월 x 5년 = 60 개월)")); row++; col = 2;    
     pSaveXl->SetCellValue(sheet, row, col++, _T("maxPeriod")); 
 
-    if (isEnvFile)  {   pSaveXl->SetCellFormula(sheet, row, col++, _T("=C7+24"));   }
+    if (isEnvFile)  {   pSaveXl->SetCellFormula(sheet, row, col++, _T("=C9+24"));   }
     else            {   pSaveXl->SetCellValue(sheet, row, col++, pEnv->maxPeriod);  }
 
     pSaveXl->SetCellValue(sheet, row, col++, _T("시뮬레이션 종료 이후의 값들도 추적하기 위해(simulationPeriod x 2)")); row++; col = 2;
@@ -206,7 +208,7 @@ void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFil
     pSaveXl->SetCellValue(sheet, row, col++, _T("fundsHoldTerm")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->fundsHoldTerm); pSaveXl->SetCellValue(sheet, row, col++, _T("자금 보유 기간 (몇개월간의 자본금을 가지고 시작할 것인가?)")); row++; col = 2;
     pSaveXl->SetCellValue(sheet, row, col++, _T("initialFunds"));
 
-    if(isEnvFile)   {   pSaveXl->SetCellFormula(sheet, row, col++, _T("=SUMPRODUCT(C10:C12,C13:C15)*C16"));    }
+    if(isEnvFile)   {   pSaveXl->SetCellFormula(sheet, row, col++, _T("=SUMPRODUCT(C12:C14,C15:C17)*C18"));    }
     else            {   pSaveXl->SetCellValue(sheet, row, col++, pEnv->fundsHoldTerm);                          }
 
     pSaveXl->SetCellValue(sheet, row, col++, _T("최초 보유한 자금  ==> fundHoldTerm 개월 유지비")); row++; col = 2;        

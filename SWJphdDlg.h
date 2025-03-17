@@ -58,6 +58,8 @@ private:
 	void LoadFilePathFromRegistry(); // 레지스트리에서 경로 읽기
 	void SaveFilePathToRegistry();   // 레지스트리에 경로 저장
 	void PrintAllProject(CCreator* pCreator);
+	void SetMode(int mode); 
+	int GetMode();
 
 
 	GLOBAL_ENV			m_gEnv; // 전역 환경변수들을 담는다
