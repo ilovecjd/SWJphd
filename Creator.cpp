@@ -34,7 +34,8 @@ int CCreator::CreateAllProjects()
 {
     int projectId    = 0;
     int tempId   = 0;
-	//CreateProjects(INTERNAL_PRJ, prjectId++, 0);// 내부는 하나 가지고 시작한다.
+
+	CreateProjects(INTERNAL_PRJ, projectId++, 0);// 내부는 하나 가지고 시작한다.
 
     for (int time   = 0; time < m_pEnv->maxPeriod; time++)
     {

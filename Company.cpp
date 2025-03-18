@@ -141,7 +141,7 @@ BOOL CCompany::CheckLastWeek(int thisTime)
 			{
 				for (int i = 0 ; i < m_pEnv->lifeCycle; i++)
 				{	
-					m_incomeTable[0][thisTime] += pProject->actMode.fixedIncome;
+					m_incomeTable[0][thisTime + i] += pProject->actMode.fixedIncome;
 				}			
 			}
 		}
@@ -157,18 +157,59 @@ void CCompany::SelectCandidates(int thisTime)
 
 	int j = 0;
 		
-	// orderTable 에서 이번주 발생한 것들만 가져 올 수도 있지만 일단 편하게
-	for (int i = 0; i < m_pCreator->m_totalProjectNum; i++)
-	{
-		PROJECT* pProject = &(m_pCreator->m_pProjects[0][i]);
 
-		// 1. 이번 기간에 발생한것들중.
-		// 2. 외부는 인원이 가능한가?
-		// 3. 내부는 인원이 가능한 모드는 어느것인가?
-		if(pProject->createTime == thisTime)
+	// 이 시점에서 진행중인 내부 프로프로 젝트가 있으면 내부프로젝는트는 후보에서 제외	
+	int nLastProjects = m_doingTable[0][thisTime];// 지금 시점에서 계속 진행할 프로젝트의 갯수
+	int doingInternalProjects = 0;
+	
+	for (int i = 0; i < nLastProjects; i++)
+	{
+		int prjId = m_doingTable[i + 1][thisTime];
+		if (prjId == -1) // 지난주 진행 프로젝트 없음
+			break;
+
+		PROJECT* pProject = &(m_pCreator->m_pProjects[0][prjId]);
+		if (pProject->category == INTERNAL_PRJ) // 내부프로젝트면
 		{
-			if (IsEnoughHR_ActMode(thisTime, pProject)) // 인원 체크			
-				m_candidateTable[j++] = pProject->ID;
+			doingInternalProjects += 1;			
+		}
+	}
+
+	if (0 == doingInternalProjects)	{ // 수행중인 내부프로젝트가 없으면
+		for (int i = 0; i < m_pCreator->m_totalProjectNum; i++)		{
+			PROJECT* pProject = &(m_pCreator->m_pProjects[0][i]);
+
+			// 1. 좋은 제품 개발 계획중 아직까지 수행하지 못한것이 있는가?
+			// 제품 아이디어의 유효기간은 6개월
+			if (INTERNAL_PRJ == pProject->category)		{ 
+				if (pProject->createTime + 6  > thisTime  )			{
+					if (-1 == pProject->isStart ) // 시작하지 않은 프로젝트이면 
+					{
+						m_candidateTable[j++] = pProject->ID;
+						doingInternalProjects += 1;
+						break; // 내부프로젝트는 하나만 선택한다.
+					}
+				}
+			}
+		}
+	}
+
+	// orderTable 에서 이번주 발생한 것들만 가져 올 수도 있지만 일단 편하게
+	// 진행중이거나 진행가능한 내부 프로젝트가 있을때만 외부 프로젝트를 검사한다.
+	if(doingInternalProjects > 0)
+	{
+		for (int i = 0; i < m_pCreator->m_totalProjectNum; i++)
+		{
+			PROJECT* pProject = &(m_pCreator->m_pProjects[0][i]);
+
+			// 1. 이번 기간에 발생한것들외부 프로젝트 중 인원투입이 가능한것
+			if(pProject->createTime == thisTime){
+				if  (EXTERNAL_PRJ == pProject->category) 
+				{
+					if (IsEnoughHR_ActMode(thisTime, pProject)) // 인원 체크			
+						m_candidateTable[j++] = pProject->ID;
+				}
+			}
 		}
 	}
 }
@@ -430,6 +471,11 @@ void CCompany::SelectNewProject(int thisTime)
 				if (IsEnoughHR_ActMode(thisTime, pProject))
 				{
 					AddProjectEntry(pProject, thisTime);
+				}
+				else
+				{
+					if (INTERNAL_PRJ == pProject->category)
+						break; // 해야할 내부 프로젝트가 있는데 인원이 부족해서 못하면 외부는 하지 않는다.
 				}
 			}
 		//}		
