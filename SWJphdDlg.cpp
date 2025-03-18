@@ -643,7 +643,8 @@ void CSWJphdDlg::OnBnClickedBtnGo()
 	Dynamic2DArray resultArr;
 	int rows, cols;
 	rows = m_gEnv.problemCount;
-	cols = 7;
+	// 순번,  수익0,수익1,수익2,  완료일0,완료일1,완료일2,  계급구간,계급0,계급1,계급2, 누적0,누적1,누적2
+	cols = 14;
 	resultArr.Resize(rows, cols);
 	for (int i = 0; i < rows; ++i) {
 		resultArr[i][0] = i + 1;
@@ -685,10 +686,13 @@ void CSWJphdDlg::OnBnClickedBtnGo()
 			RunSimulator(&simResult);// 시뮬레이션 실행하고 결과 리턴
 
 			// 결과 기록
-			resultArr[i][j*2+1] = simResult.time;
-			resultArr[i][j*2+2] = simResult.balance;
+			resultArr[i][j+1] = simResult.balance;
+			resultArr[i][j+4] = simResult.time;
 		}
 	}
+
+	// 0:순번,  수익0,수익1,수익2,  완료일0,완료일1,완료일2,  계급구간,계급0,계급1,계급2, 누적구간,누적0,누적1,누적2
+	MakeFreq(&resultArr,0, 1,rows, 3, 0, 7, 50);
 
 	int totalSize = rows * cols;  // Total number of elements	
 	int* tempBuf = new int[totalSize];  // Allocate memory for the total number of elements

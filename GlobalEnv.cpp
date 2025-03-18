@@ -5,10 +5,11 @@
 #include "Company.h"
 #include "Creator.h"
 
+#include <vector>
+#include <limits>
 #include <cmath>
+
 #include <stdexcept>
-
-
 
 
 void PrintOneProject(CXLEzAutomation* pSaveXl, int SheetNum, PROJECT* pProject)
@@ -333,3 +334,94 @@ double InverseNormal(double p, double mu, double sigma)
     return value;
 }
 
+
+
+
+// MakeFreq 함수
+/*
+Dynamic2DArray* pArray : 값이 들어 있는 배열
+int sourRow : pArray 에서 도수분포표를 만들들 데이터가 있는 첫 행, 0번 부터시작하는 인덱스임.
+int sourCol : pArray 에서 도수분포표를 만들들 데이터가 있는 첫 열, 0번 부터시작하는 인덱스임.
+int rowCnt : pArray 에서 도수분포표를 만들들 데이터가 있는 행의 갯수
+int colCnt : pArray 에서 도수분포표를 만들들 데이터가 있는 열의 갯수
+int desRow : 생성된 도수분포표를 적을 시작 행
+int desCol : 생성된 도수분포표를 적을 시작 열
+int classCnt : 계급 구간수
+*/
+
+BOOL MakeFreq(Dynamic2DArray* pArray,
+    int sourRow, int sourCol,
+    int rowCnt, int colCnt,
+    int desRow, int desCol,
+    int numClasses)
+{
+    if (!pArray || rowCnt <= 0 || colCnt <= 0 || numClasses <= 0)
+        return FALSE;
+
+    // 1. source 영역의 모든 데이터에서 전체 최소/최대값 구하기
+    int globalMin = (std::numeric_limits<int>::max)();
+    int globalMax = (std::numeric_limits<int>::min)();
+
+    for (int i = sourRow; i < sourRow + rowCnt; i++) {
+        for (int j = sourCol; j < sourCol + colCnt; j++) {
+            int val = (*pArray)[i][j];
+            if (val < globalMin)
+                globalMin = val;
+            if (val > globalMax)
+                globalMax = val;
+        }
+    }
+
+    // 2. 최소/최대값을 정수로 처리 (이미 정수이므로 floor/ceil은 생략)
+    // 단, 모든 값이 동일할 경우 대비하여 범위를 1로 설정
+    int range = globalMax - globalMin;
+    if (range == 0)
+        range = 1;
+
+    // 3. 계급 폭(classWidth)을 올림하여 정수로 계산
+    int classWidth = (range + numClasses - 1) / numClasses;
+    if (classWidth == 0)
+        classWidth = 1;
+
+    // 4. 각 source 열별 도수분포 계산
+    // freq[j][i] : source의 j번째 열에 대해 계급 i (0~numClasses-1)의 빈도수
+    std::vector< std::vector<int> > freq(colCnt, std::vector<int>(numClasses, 0));
+    for (int i = sourRow; i < sourRow + rowCnt; i++) {
+        for (int j = 0; j < colCnt; j++) {
+            int val = (*pArray)[i][sourCol + j];
+            int classIndex = (val - globalMin) / classWidth;
+            if (classIndex >= numClasses)
+                classIndex = numClasses - 1;
+            freq[j][classIndex]++;
+        }
+    }
+
+    // 5. 각 source 열별 누적도수분포 계산
+    std::vector< std::vector<int> > cumFreq(colCnt, std::vector<int>(numClasses, 0));
+    for (int j = 0; j < colCnt; j++) {
+        cumFreq[j][0] = freq[j][0];
+        for (int i = 1; i < numClasses; i++) {
+            cumFreq[j][i] = cumFreq[j][i - 1] + freq[j][i];
+        }
+    }
+
+    // 6. 계산 결과를 pArray에 기록하기
+    // 출력 레이아웃:
+    // - desCol : 각 계급의 시작값 (globalMin + i*classWidth)
+    // - desCol+1 ~ desCol+colCnt : 각 source 열의 도수
+    // - desCol+1+colCnt ~ desCol+1+2*colCnt - 1 : 각 source 열의 누적도수
+    for (int i = 0; i < numClasses; i++) {
+        int binStart = globalMin + i * classWidth;
+        (*pArray)[desRow + i][desCol] = binStart;
+        // 도수분포 기록
+        for (int j = 0; j < colCnt; j++) {
+            (*pArray)[desRow + i][desCol + 1 + j] = freq[j][i];
+        }
+        // 누적도수분포 기록
+        for (int j = 0; j < colCnt; j++) {
+            (*pArray)[desRow + i][desCol + 1 + colCnt + j] = cumFreq[j][i];
+        }
+    }
+
+    return TRUE;
+}

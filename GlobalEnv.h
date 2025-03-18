@@ -303,6 +303,8 @@ void LoacalValueToExcel(CXLEzAutomation* pSaveXl, int sheet, GLOBAL_ENV* pEnv, B
 
 void PrintResultHeader(CXLEzAutomation* pSaveXl, int sheet);
 
+BOOL MakeFreq(Dynamic2DArray* pArray,int sourRow, int sourCol, int rowCnt, int colCnt, int desRow, int desCol, int numClasses);
+
 /*
 일자 	2025-03-03						
 구분							
