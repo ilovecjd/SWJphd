@@ -25,6 +25,7 @@
 #define IDC_EDIT_EX_PROBABILITY         1017
 #define IDC_EDIT_MAX_DURATION           1018
 #define IDC_EDIT_MIN_DURATION           1019
+#define IDC_BTN_GO                      1021
 #define IDC_EDIT_FUND_RATE              1022
 #define IDC_EDIT_MAX_MODE               1023
 #define IDC_EDIT_MIN_MODE               1024
@@ -38,7 +39,6 @@
 #define IDC_EDIT_MU2                    1032
 #define IDC_EDIT_PROBLEM_COUNT          1035
 #define IDC_EDIT_SELECT_MODE            1036
-#define ID_EDIT_SELECT_MODE             1036
 
 // Next default values for new objects
 // 
@@ -46,7 +46,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1021
+#define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

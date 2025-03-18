@@ -11,6 +11,8 @@
 class CSWJphdDlgAutoProxy;
 
 
+
+
 // CSWJphdDlg 대화 상자
 class CSWJphdDlg : public CDialogEx
 {
@@ -69,6 +71,10 @@ private:
 	int					m_stepByStepCnt;// 디버깅을 위해서 한타임씩 진행 할때 사용하는 컨틀롤변수
 
 	void PrintAllProject(CCreator m_pCreator);
+	void RunSimulator(_RESULT_* simResult);
+	BOOL InitCompanyAndCreator();
+
+	void ScreenValueToLocalValue();
 
 public:
 	afx_msg void OnBnClickedBtnEnvOpen();
@@ -78,4 +84,5 @@ public:
 	afx_msg void OnEnChangeEditMaxDuration();
 	afx_msg void OnBnClickedBtnStepByStep();
 	afx_msg void OnBnClickedBtnEnvSave();
+	afx_msg void OnBnClickedBtnGo();
 };

@@ -26,7 +26,7 @@ enum SheetName {
 	WS_NUM_GENV = 0,
 	WS_NUM_DASHBOARD,
 	WS_NUM_PROJECT,
-	WS_NUM_DEBUG_INFO,
+	WS_NUM_RESULT,
 	WS_TOTAL_SHEET_COUNT // Total number of sheets
 };
 
@@ -134,6 +134,12 @@ struct PROJECT {
 	int winProb;		// 성공 확률
 	int nCashFlows;	// 비용 지급 횟수
 	int profit;	// 총 기대 수익 (HR 종속)
+};
+
+struct _RESULT_
+{
+	int time;
+	int balance;
 };
 
 
@@ -293,7 +299,9 @@ void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum);
 void PrintOneDashBoard(CXLEzAutomation* pSaveXl, CCompany* pCompany, int thisTime);
 void PrintDashBoard(CXLEzAutomation* pSaveXl, int sheet, CCompany* pCompany, CCreator* pCreator, int thisTime);
 
-void SaveGenv(CXLEzAutomation* pSaveXl, int sheet, GLOBAL_ENV* pEnv, BOOL isEnvFile);
+void LoacalValueToExcel(CXLEzAutomation* pSaveXl, int sheet, GLOBAL_ENV* pEnv, BOOL isEnvFile);
+
+void PrintResultHeader(CXLEzAutomation* pSaveXl, int sheet);
 
 /*
 일자 	2025-03-03						

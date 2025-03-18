@@ -12,7 +12,7 @@
 #include "XLEzAutomation.h"
 
 
-LPOLESTR gSaveSheets[WS_TOTAL_SHEET_COUNT] = { L"GlobalEnv", L"dashboard", L"project", L"Debug_info" };
+LPOLESTR gSaveSheets[WS_TOTAL_SHEET_COUNT] = { L"GlobalEnv", L"dashboard", L"project", L"result" };
 
 
 
@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CSWJphdDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_ENV_LOAD, &CSWJphdDlg::OnBnClickedBtnEnvLoad)	
 	ON_BN_CLICKED(IDC_BTN_STEP_BY_STEP, &CSWJphdDlg::OnBnClickedBtnStepByStep)
 	ON_BN_CLICKED(IDC_BTN_ENV_SAVE, &CSWJphdDlg::OnBnClickedBtnEnvSave)
+	ON_BN_CLICKED(IDC_BTN_GO, &CSWJphdDlg::OnBnClickedBtnGo)
 END_MESSAGE_MAP()
 
 
@@ -325,7 +326,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvLoad()
 	CString strTemp;
 
 	SetDlgItemInt(IDC_EDIT_PROBLEM_COUNT, m_gEnv.problemCount);
-	SetDlgItemInt(ID_EDIT_SELECT_MODE, m_gEnv.selectedMode);
+	SetDlgItemInt(IDC_EDIT_SELECT_MODE, m_gEnv.selectedMode);
 
 	SetDlgItemInt(IDC_EDIT_SIM_PERIOD,	m_gEnv.simulationPeriod);
 	strTemp.Format(_T("%.2f"), m_gEnv.technicalFee);  //
@@ -447,8 +448,6 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
     xlAuto.ReleaseExcel();
 }
 
-
-
 void CSWJphdDlg::OnBnClickedBtnStepByStep()
 {
 	// 초기화에 추가??	
@@ -456,7 +455,8 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 	if (-1 == m_stepByStepCnt)
 	{
 		// 다른 버튼들은 disable 하고 step by step 모드로 진입함.
-		m_stepByStepCnt = 0; 
+		m_stepByStepCnt = 0;
+		ScreenValueToLocalValue();
 
 		if(NULL != m_pSaveXl)
 		{
@@ -472,8 +472,7 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 				
 		if (NULL != m_pCreator)
 		{
-			delete m_pCreator;
-			m_pCreator = new CCreator;
+			delete m_pCreator;			
 			m_pCreator = NULL;
 		}
 		m_pCreator = new CCreator;
@@ -494,7 +493,7 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 
 		m_pSaveXl->ClearSheetContents(WS_NUM_DASHBOARD);
 		PrintDBoardHeader(m_pSaveXl, WS_NUM_DASHBOARD);
-		SaveGenv(m_pSaveXl, WS_NUM_GENV, &(m_pCreator->m_env),FALSE);// 환경 변수 저장
+		LoacalValueToExcel(m_pSaveXl, WS_NUM_GENV, m_pCreator->m_pEnv,FALSE);// 환경 변수 저장
 	}
 
 	// 기간이 다 될때 까지
@@ -519,7 +518,7 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 	PrintOneTime(m_pSaveXl, m_pCreator, m_pCompany, m_stepByStepCnt);
 
 	// 기간이 다 되었으면 
-	if (m_pCompany->m_env.maxPeriod <= m_stepByStepCnt)
+	if (m_pCompany->m_pEnv->maxPeriod <= m_stepByStepCnt)
 	{	
 		m_stepByStepCnt = -1;
 		GetDlgItem(IDC_BTN_ENV_SAVE)->EnableWindow(TRUE);
@@ -529,60 +528,73 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 	m_stepByStepCnt ++;
 }
 
-
-void CSWJphdDlg::OnBnClickedBtnEnvSave()
+void CSWJphdDlg::ScreenValueToLocalValue()
 {
-	// Global 환경 변수 값들을 엑셀파일로 저장한다.
 	CString strTemp;
-	
-	m_gEnv.problemCount	= GetDlgItemInt(IDC_EDIT_PROBLEM_COUNT);
-	m_gEnv.selectedMode	= GetDlgItemInt(IDC_EDIT_SELECT_MODE);
+
+	m_gEnv.problemCount = GetDlgItemInt(IDC_EDIT_PROBLEM_COUNT);
+	m_gEnv.selectedMode = GetDlgItemInt(IDC_EDIT_SELECT_MODE);
 	m_gEnv.simulationPeriod = GetDlgItemInt(IDC_EDIT_SIM_PERIOD);
-	
+
 	GetDlgItemText(IDC_EDIT_TECH_FEE, strTemp);
 	m_gEnv.technicalFee = _tstof(strTemp);
 
-	m_gEnv.higHrCount	= GetDlgItemInt(IDC_EDIT_HIG_HR);
-	m_gEnv.midHrCount	= GetDlgItemInt(IDC_EDIT_MID_HR);
-	m_gEnv.lowHrCount	= GetDlgItemInt(IDC_EDIT_LOW_HR);
+	m_gEnv.higHrCount = GetDlgItemInt(IDC_EDIT_HIG_HR);
+	m_gEnv.midHrCount = GetDlgItemInt(IDC_EDIT_MID_HR);
+	m_gEnv.lowHrCount = GetDlgItemInt(IDC_EDIT_LOW_HR);
 
-	m_gEnv.higHrCost	= GetDlgItemInt(IDC_EDIT_HIG_COST);
-	m_gEnv.midHrCost	= GetDlgItemInt(IDC_EDIT_MID_COST);
-	m_gEnv.lowHrCost	= GetDlgItemInt(IDC_EDIT_LOW_COST);
+	m_gEnv.higHrCost = GetDlgItemInt(IDC_EDIT_HIG_COST);
+	m_gEnv.midHrCost = GetDlgItemInt(IDC_EDIT_MID_COST);
+	m_gEnv.lowHrCost = GetDlgItemInt(IDC_EDIT_LOW_COST);
 
 	m_gEnv.fundsHoldTerm = GetDlgItemInt(IDC_EDIT_FUND_RATE);
-	m_gEnv.initialFunds	= GetDlgItemInt(IDC_EDIT_INI_FUNDS);
+	m_gEnv.initialFunds = GetDlgItemInt(IDC_EDIT_INI_FUNDS);
 
 	GetDlgItemText(IDC_EDIT_EX_PROBABILITY, strTemp);
 	m_gEnv.extPrjInTime = _tstof(strTemp);
-		
+
 	GetDlgItemText(IDC_EDIT_IN_PROBABILITY, strTemp);
 	m_gEnv.intPrjInTime = _tstof(strTemp);
 
-	m_gEnv.maxDuration	= GetDlgItemInt(IDC_EDIT_MAX_DURATION);
-	m_gEnv.minDuration	= GetDlgItemInt(IDC_EDIT_MIN_DURATION);
+	m_gEnv.maxDuration = GetDlgItemInt(IDC_EDIT_MAX_DURATION);
+	m_gEnv.minDuration = GetDlgItemInt(IDC_EDIT_MIN_DURATION);
 
-	m_gEnv.maxMode		= GetDlgItemInt(IDC_EDIT_MAX_MODE);
-	m_gEnv.minMode		= GetDlgItemInt(IDC_EDIT_MIN_MODE);
-	m_gEnv.lifeCycle	= GetDlgItemInt(IDC_EDIT_LIFE_CYCLE);
+	m_gEnv.maxMode = GetDlgItemInt(IDC_EDIT_MAX_MODE);
+	m_gEnv.minMode = GetDlgItemInt(IDC_EDIT_MIN_MODE);
+	m_gEnv.lifeCycle = GetDlgItemInt(IDC_EDIT_LIFE_CYCLE);
 
 	GetDlgItemText(IDC_EDIT_PROFIT_RATE, strTemp);
 	m_gEnv.profitRate = _tstof(strTemp);
 
-	m_gEnv.mu0Rate		= GetDlgItemInt(IDC_EDIT_MU0);
-	m_gEnv.sigma0Rate	= GetDlgItemInt(IDC_EDIT_SIGMA0);
-		
+	m_gEnv.mu0Rate = GetDlgItemInt(IDC_EDIT_MU0);
+	m_gEnv.sigma0Rate = GetDlgItemInt(IDC_EDIT_SIGMA0);
+
 	GetDlgItemText(IDC_EDIT_MU1, strTemp);
-	m_gEnv.mu1Rate		= _tstof(strTemp);
-		
+	m_gEnv.mu1Rate = _tstof(strTemp);
+
 	GetDlgItemText(IDC_EDIT_SIGMA1, strTemp);
-	m_gEnv.sigma1Rate	= _tstof(strTemp);
-		
+	m_gEnv.sigma1Rate = _tstof(strTemp);
+
 	GetDlgItemText(IDC_EDIT_MU2, strTemp);
-	m_gEnv.mu2Rate		= _tstof(strTemp);
-		
+	m_gEnv.mu2Rate = _tstof(strTemp);
+
 	GetDlgItemText(IDC_EDIT_SIGMA2, strTemp);
-	m_gEnv.sigma2Rate	= _tstof(strTemp);
+	m_gEnv.sigma2Rate = _tstof(strTemp);
+
+
+	m_gEnv.maxPeriod = m_gEnv.simulationPeriod+24 ;
+	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_gEnv.maxPeriod);
+
+	m_gEnv.initialFunds = (m_gEnv.higHrCount * m_gEnv.higHrCost + m_gEnv.midHrCount * m_gEnv.midHrCost + m_gEnv.lowHrCount * m_gEnv.lowHrCost) * m_gEnv.fundsHoldTerm;
+	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_gEnv.initialFunds);
+
+	return;
+}
+
+void CSWJphdDlg::OnBnClickedBtnEnvSave()
+{
+	// Global 환경 변수 값들을 엑셀파일로 저장한다.
+	ScreenValueToLocalValue();
 
 	// 엑셀 파일 열기
 	CXLEzAutomation xlGEnv;	
@@ -592,7 +604,7 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 		return;
 	}
 
-	SaveGenv(&xlGEnv, 0, &m_gEnv, TRUE);
+	LoacalValueToExcel(&xlGEnv, 0, &m_gEnv, TRUE);
 
 	xlGEnv.GetCellValue(WS_NUM_GENV, 8, 3, &m_gEnv.maxPeriod);
 	SetDlgItemInt(IDC_EDIT_INI_FUNDS, m_gEnv.maxPeriod);
@@ -619,6 +631,113 @@ void CSWJphdDlg::OnBnClickedBtnEnvSave()
 	}
 
 	m_stepByStepCnt = -1;
-	GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
+	//GetDlgItem(IDC_BTN_STEP_BY_STEP)->EnableWindow(FALSE);
 }
 
+
+void CSWJphdDlg::OnBnClickedBtnGo()
+{	
+	// 결과를 담을 배열
+	ScreenValueToLocalValue();
+
+	Dynamic2DArray resultArr;
+	int rows, cols;
+	rows = m_gEnv.problemCount;
+	cols = 7;
+	resultArr.Resize(rows, cols);
+	for (int i = 0; i < rows; ++i) {
+		resultArr[i][0] = i + 1;
+	}
+
+
+
+	if (NULL != m_pSaveXl)	{
+		m_pSaveXl->ReleaseExcel();
+		delete m_pSaveXl;
+	}
+
+	m_pSaveXl = new CXLEzAutomation;
+
+	if (!m_pSaveXl->CreateExcelFile(m_strSaveFilePath, gSaveSheets, WS_TOTAL_SHEET_COUNT))
+	{
+		AfxMessageBox(_T("error"));
+		return ;
+	}
+	LoacalValueToExcel(m_pSaveXl, WS_NUM_GENV, &m_gEnv, FALSE);// 환경 변수 저장
+
+	for(int i = 0; i < rows ;i++) // 실행 횟수
+	{
+		// 동일한 조건에서 모드만 다르게 해서 row 만큼 실행하고 결과를 얻는다.
+		if (FALSE == InitCompanyAndCreator())
+		{
+			AfxMessageBox(_T("InitCompanyAndCreator 에러"));
+			return;
+		}
+
+		for (int j=0 ;j <3; j++) // 모드별로 진행
+		{	
+			m_pCompany->m_pCreator->SetInterActMode(j);// 변경된 모드로 Project 변경
+			m_pCompany->Init(); // 변경된 모드로 Company 초기화
+
+			_RESULT_ simResult;
+			simResult.time		= 0;
+			simResult.balance	= 0;
+			RunSimulator(&simResult);// 시뮬레이션 실행하고 결과 리턴
+
+			// 결과 기록
+			resultArr[i][j*2+1] = simResult.time;
+			resultArr[i][j*2+2] = simResult.balance;
+		}
+	}
+
+	int totalSize = rows * cols;  // Total number of elements	
+	int* tempBuf = new int[totalSize];  // Allocate memory for the total number of elements
+	resultArr.copyToContinuousMemory(tempBuf, totalSize);
+
+	PrintResultHeader(m_pSaveXl, WS_NUM_RESULT);
+	m_pSaveXl->WriteArrayToRange(WS_NUM_RESULT, 3,1,tempBuf, rows, cols);
+
+	delete[] tempBuf;
+}
+
+void CSWJphdDlg::RunSimulator(_RESULT_* simResult)
+{
+	// 마지막 기간의 결과 확인은 기간이 다 되고난 다음 시점까지 진행해야 나옴
+	int thisTime;
+	for (thisTime = 0; thisTime <= m_gEnv.simulationPeriod; thisTime++)
+	{
+		if (FALSE == m_pCompany->Decision(thisTime))  // 이번 스탭의 기간에 결정해야 할 일들			
+		{
+			simResult->time		= thisTime;
+			simResult->balance	= m_pCompany->m_balanceTable[0][thisTime-1];
+			return;
+		}
+	}
+	
+	simResult->time = thisTime-1;
+	simResult->balance = m_pCompany->m_balanceTable[0][thisTime - 2];
+	return;	
+}
+
+BOOL CSWJphdDlg::InitCompanyAndCreator()
+{
+    if (NULL != m_pCreator)
+    {
+        delete m_pCreator;        
+        m_pCreator = NULL;
+    }
+    m_pCreator = new CCreator;
+    m_pCreator->Init(&m_gEnv);
+    m_pCreator->SetInterActMode(m_gEnv.selectedMode);
+
+    if (NULL != m_pCompany)
+    {
+        delete m_pCompany;
+        m_pCompany = NULL;
+    }
+
+    m_pCompany = new CCompany(&m_gEnv, m_pCreator);
+    m_pCompany->Init();
+
+	return TRUE;
+}

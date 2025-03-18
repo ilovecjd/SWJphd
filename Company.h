@@ -11,8 +11,8 @@ public:
 	CCompany(GLOBAL_ENV* pEnv, CCreator* pCreator);
 	~CCompany();
 
-	GLOBAL_ENV	m_env;
-	CCreator	m_creator;
+	GLOBAL_ENV*	m_pEnv;
+	CCreator*	m_pCreator;
 
 	Dynamic2DArray m_totalHR;
 	Dynamic2DArray m_doingHR;

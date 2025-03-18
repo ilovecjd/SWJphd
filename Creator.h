@@ -17,18 +17,13 @@ public :
 	int m_totalProjectNum;	
 	Dynamic2DArray m_orderTable;	
     DynamicProjectArray m_pProjects;
-	GLOBAL_ENV m_env;
+	GLOBAL_ENV* m_pEnv;
 
 	BOOL Init(GLOBAL_ENV* pGlobalEnv);
 	int MakeModeAndRevenue(PROJECT* pProject, int duration, int intOrExt );
 	void SetInterActMode(int iRule);
-
-	void Save(CString filename, CString strInSheetName);
 		
 private:
-	
-	
-
 	int CreateAllProjects();
 	int CreateProjects(int category, int Id, int week);		
 	double CalculateHRAndProfit(PROJECT* pProject);

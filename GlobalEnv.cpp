@@ -162,7 +162,7 @@ void PrintDBoardHeader(CXLEzAutomation* pSaveXl, int SheetNum)
 
 
 // is EvnFile : 환경변수 파일이면 true, 결과물 파일이면 fasle
-void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFile )
+void LoacalValueToExcel(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFile )
 {    
     int row = 0;
     int col = 1;
@@ -209,7 +209,7 @@ void SaveGenv(CXLEzAutomation* pSaveXl,int sheet, GLOBAL_ENV* pEnv,BOOL isEnvFil
     pSaveXl->SetCellValue(sheet, row, col++, _T("initialFunds"));
 
     if(isEnvFile)   {   pSaveXl->SetCellFormula(sheet, row, col++, _T("=SUMPRODUCT(C12:C14,C15:C17)*C18"));    }
-    else            {   pSaveXl->SetCellValue(sheet, row, col++, pEnv->fundsHoldTerm);                          }
+    else            {   pSaveXl->SetCellValue(sheet, row, col++, pEnv->initialFunds);                          }
 
     pSaveXl->SetCellValue(sheet, row, col++, _T("최초 보유한 자금  ==> fundHoldTerm 개월 유지비")); row++; col = 2;        
     pSaveXl->SetCellValue(sheet, row, col++, _T("extPrjInTime")); pSaveXl->SetCellValue(sheet, row, col++, pEnv->extPrjInTime); pSaveXl->SetCellValue(sheet, row, col++, _T("기간내 발생하는 평균 발주 프로젝트 수(포아송분포로)")); row++; col = 2;
@@ -247,6 +247,18 @@ void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum  )
 
     pSaveXl->WriteArrayToRange(SheetNum, 1, 1, (CString*)strTitle, 1, nPrintWidth);
 
+}
+
+void PrintResultHeader(CXLEzAutomation* pSaveXl, int sheet)
+{    
+    CString strTitle[] = {
+            _T(""), _T("Mode0"), _T(""), _T("Mode1"), _T(""), _T("Mode2"), _T(""),
+            _T("순번"),_T("기간"),_T("잔액"),_T("기간"),_T("잔액"), _T("기간"),_T("잔액"),
+    };
+
+    int nPrintWidth = sizeof(strTitle) / sizeof(strTitle[0]);
+
+    pSaveXl->WriteArrayToRange(sheet, 1, 1, (CString*)strTitle, 2, nPrintWidth / 2);
 }
 
 int PoissonRandom(double lambda) {
@@ -320,3 +332,4 @@ double InverseNormal(double p, double mu, double sigma)
 
     return value;
 }
+

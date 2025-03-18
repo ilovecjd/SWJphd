@@ -6,8 +6,8 @@
 
 CCompany::CCompany(GLOBAL_ENV* pEnv, CCreator* pCreator)
 {	
-	m_env = *pEnv;
-	m_creator = *pCreator;
+	m_pEnv = pEnv;
+	m_pCreator = pCreator;
 }
 
 CCompany::~CCompany()
@@ -27,7 +27,7 @@ BOOL CCompany::Init()
 {   
 
 	// 오더테이블의 기간은 넉넉히 2배로 설정해 놓는다.
-	int maxTime = m_env.maxPeriod;
+	int maxTime = m_pEnv->maxPeriod;
 
 	m_doingHR.Resize(3, maxTime);
 	m_totalHR.Resize(3, maxTime);
@@ -37,18 +37,15 @@ BOOL CCompany::Init()
 	m_expensesTable.Resize(1, maxTime);
 	m_balanceTable.Resize(1, maxTime);
 
-	m_creator.m_pProjects;
-	m_creator.m_totalProjectNum;
-
 	// 매 시점 마다 필요한 비용
-	int expense = m_env.higHrCount * m_env.higHrCost + m_env.midHrCount * m_env.midHrCost + m_env.lowHrCount * m_env.lowHrCost;
+	int expense = m_pEnv->higHrCount * m_pEnv->higHrCost + m_pEnv->midHrCount * m_pEnv->midHrCost + m_pEnv->lowHrCount * m_pEnv->lowHrCost;
 
 	m_doingHR.Clear(0);	// 일하는 사람도 없고
 	for (int i = 0; i < maxTime; i++)
 	{
-		m_totalHR[HR_HIG][i] = m_freeHR[HR_HIG][i] = m_env.higHrCount;
-		m_totalHR[HR_MID][i] = m_freeHR[HR_MID][i] = m_env.midHrCount;
-		m_totalHR[HR_LOW][i] = m_freeHR[HR_LOW][i] = m_env.lowHrCount;
+		m_totalHR[HR_HIG][i] = m_freeHR[HR_HIG][i] = m_pEnv->higHrCount;
+		m_totalHR[HR_MID][i] = m_freeHR[HR_MID][i] = m_pEnv->midHrCount;
+		m_totalHR[HR_LOW][i] = m_freeHR[HR_LOW][i] = m_pEnv->lowHrCount;
 	}
 	
 	m_expensesTable.Clear(expense);// 고정비용 나가고
@@ -58,7 +55,7 @@ BOOL CCompany::Init()
 	
 	for(int i = 0; i< m_doingTable.getCols(); i++)
 		m_doingTable[0][i] = 0;
-	m_balanceTable[0][0]	= m_env.initialFunds; //
+	m_balanceTable[0][0]	= m_pEnv->initialFunds; //
 	
     return TRUE;
 }
@@ -109,12 +106,14 @@ BOOL CCompany::Decision(int thisTime ) {
 // 1. 지난 기간에 진행중인 프로젝트중 완료 내부 프로젝트가 있는가?
 BOOL CCompany::CheckLastWeek(int thisTime)
 {	
-	if (0 == thisTime) // 첫주는 체크할 지난주가 없음		
+	if (0 == thisTime){ // 첫주는 체크할 지난주가 없음		
+		m_balanceTable[0][0] = m_pEnv->initialFunds;
 		return TRUE;
+	}
 
 	// 지난주까지의 지급은 잘 되었는가?? (이번주 운영 가능한가?)
 	// 자금 현황 체크. 전체를 매번 다시 계산하는것이 불편해 보여도 그대로 두자.	
-	int Cash = m_env.initialFunds;
+	int Cash = m_pEnv->initialFunds;
 	for (int i = 0; i < thisTime; i++)
 		Cash += (m_incomeTable[0][i] - m_expensesTable[0][i]);
 
@@ -133,16 +132,16 @@ BOOL CCompany::CheckLastWeek(int thisTime)
 		if (prjId == -1) // 지난주 진행 프로젝트 없음
 			return TRUE;
 
-		PROJECT* pProject = &(m_creator.m_pProjects[0][prjId]);
+		PROJECT* pProject = &(m_pCreator->m_pProjects[0][prjId]);
 
 		if (pProject->category == INTERNAL_PRJ) // 내부프로젝트면
 		{
 			// 1. 지난주에 종료되었으면 앞으로 받을 금액표 업데이트
 			if (pProject->endTime == (thisTime-1)) 	
 			{
-				for (int i = 0 ; i < m_env.lifeCycle; i++)
+				for (int i = 0 ; i < m_pEnv->lifeCycle; i++)
 				{	
-					m_incomeTable[0][thisTime + i] += pProject->actMode.fixedIncome;
+					m_incomeTable[0][thisTime] += pProject->actMode.fixedIncome;
 				}			
 			}
 		}
@@ -159,9 +158,9 @@ void CCompany::SelectCandidates(int thisTime)
 	int j = 0;
 		
 	// orderTable 에서 이번주 발생한 것들만 가져 올 수도 있지만 일단 편하게
-	for (int i = 0; i < m_creator.m_totalProjectNum; i++)
+	for (int i = 0; i < m_pCreator->m_totalProjectNum; i++)
 	{
-		PROJECT* pProject = &(m_creator.m_pProjects[0][i]);
+		PROJECT* pProject = &(m_pCreator->m_pProjects[0][i]);
 
 		// 1. 이번 기간에 발생한것들중.
 		// 2. 외부는 인원이 가능한가?
@@ -188,7 +187,7 @@ BOOL CCompany::IsEnoughHR_ActMode(int thisTime, PROJECT* pProject)
 		doingHR[HR_LOW][i] += pProject->actMode.lowHrCount;
 	}
 
-	for (int i = thisTime; i < m_env.maxPeriod; i++)
+	for (int i = thisTime; i < m_pEnv->maxPeriod; i++)
 	{
 		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
 			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
@@ -217,7 +216,7 @@ BOOL CCompany::IsEnoughHR_ActMode(int thisTime, PROJECT* pProject)
 //		doingHR[HR_LOW][i]	+= pProject->mode0.lowHrCount;
 //	}
 //
-//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	for (int i = thisTime; i < m_pEnv->maxPeriod; i++)
 //	{
 //		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
 //			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
@@ -246,7 +245,7 @@ BOOL CCompany::IsEnoughHR_ActMode(int thisTime, PROJECT* pProject)
 //		doingHR[HR_LOW][i] += pProject->mode0.lowHrCount;
 //	}
 //
-//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	for (int i = thisTime; i < m_pEnv->maxPeriod; i++)
 //	{
 //		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
 //			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
@@ -265,7 +264,7 @@ BOOL CCompany::IsEnoughHR_ActMode(int thisTime, PROJECT* pProject)
 //		doingHR[HR_LOW][i] += pProject->mode1.lowHrCount;
 //	}
 //
-//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	for (int i = thisTime; i < m_pEnv->maxPeriod; i++)
 //	{
 //		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
 //			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
@@ -284,7 +283,7 @@ BOOL CCompany::IsEnoughHR_ActMode(int thisTime, PROJECT* pProject)
 //		doingHR[HR_LOW][i] += pProject->mode2.lowHrCount;
 //	}
 //
-//	for (int i = thisTime; i < m_env.maxPeriod; i++)
+//	for (int i = thisTime; i < m_pEnv->maxPeriod; i++)
 //	{
 //		if (m_totalHR[HR_HIG][i] < doingHR[HR_HIG][i] ||
 //			m_totalHR[HR_MID][i] < doingHR[HR_MID][i] ||
@@ -397,13 +396,13 @@ void CCompany::SelectNewProject(int thisTime)
 
 		int id = m_candidateTable[i++];
 
-		PROJECT* pProject = &(m_creator.m_pProjects[0][id]);
+		PROJECT* pProject = &(m_pCreator->m_pProjects[0][id]);
 
-		//if (0 < m_env.selectOrder)
+		//if (0 < m_pEnv->selectOrder)
 		//{
 			//if (pProject->category == 0)// 외부 프로젝트면
 			//{
-			//	if (pProject->startAbleTime < m_env.maxPeriod)
+			//	if (pProject->startAbleTime < m_pEnv->maxPeriod)
 			//	{
 			//		if (IsEnoughHR(thisTime, pProject))
 			//		{
@@ -426,7 +425,7 @@ void CCompany::SelectNewProject(int thisTime)
 		//}
 		//else // 0번 프로젝트는 내부외부 구분 없음
 		//{			
-			if (pProject->startAbleTime < m_env.maxPeriod)
+			if (pProject->startAbleTime < m_pEnv->maxPeriod)
 			{
 				if (IsEnoughHR_ActMode(thisTime, pProject))
 				{
@@ -529,7 +528,7 @@ void CCompany::AddProjectEntry(PROJECT* pProject,  int addTime)
 
 int CCompany::CalculateFinalResult() 
 {
-	int result = m_env.initialFunds;
+	int result = m_pEnv->initialFunds;
 
 	for (int i = 0; i < m_lastDecisionTime; i++)
 	{
