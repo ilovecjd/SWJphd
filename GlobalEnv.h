@@ -112,16 +112,18 @@ struct PROJECT {
 	int createTime;		// 발주일
 	int startAbleTime;	// 시작 가능일
 	int duration;		// 프로젝트의 총 기간
+	int tempDuration;		// 프로젝트의 총 기간 백업
 	int startTime;		// 프로젝트의 시작일
 	int endTime;		// 프로젝트 종료일
 
-	int revenue;		// 외부 프로젝트의 수주금액 or 0 or 선택된 모드의 fixedIncome
+	//int revenue;		// 외부 프로젝트의 수주금액 or 0 or 선택된 모드의 fixedIncome
 	int firstPay;		// 선금 액수
 	int secondPay;		// 2차 지급 액수
 	int finalPay;		// 3차 지급 액수
 	int firstPayTime;	// 선금 지급일
 	int secondPayTime;	// 2차 지급일
 	int finalPayTime;	// 3차 지급일
+	int isStart;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
 
 	_MODE	actMode;	// 선택된 모드
 	_MODE	mode0;		// 신제품개발의 진행 방법중 하나
@@ -129,7 +131,6 @@ struct PROJECT {
 	_MODE	mode2;
 
 	// 이하 미사용
-	int isStart;		// 진행 여부 (0: 미진행, 나머지: 진행시작한 주)
 	int experience;	// 경험 (0: 무경험 1: 유경험)
 	int winProb;		// 성공 확률
 	int nCashFlows;	// 비용 지급 횟수

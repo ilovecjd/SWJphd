@@ -23,7 +23,7 @@ void PrintOneProject(CXLEzAutomation* pSaveXl, int SheetNum, PROJECT* pProject)
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->duration);			j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->startTime);			j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->endTime);		    j++;
-    pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->revenue);			j++;
+    //pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->revenue);			j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->firstPay);			j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->secondPay);			j++;
     pSaveXl->SetCellValue(SheetNum, posY + 2, j, pProject->finalPay);			j++;
@@ -236,8 +236,8 @@ void PrintProjectSheetHeader(CXLEzAutomation* pSaveXl, int SheetNum  )
 {
 //#define _PRINT_WIDTH 35	
     CString strTitle[] = {
-            _T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),
-            _T("수익금"),_T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
+            _T("category"), _T("ID"), _T("발주일"), _T("시작가능"),_T("기간"), _T("시작"), _T("끝"),//_T("수익금"),
+            _T("선금"),_T("중도금"),_T("잔금"),_T("선금일"), _T("중도금일"),_T("잔금일"),
             _T("고급A"),_T("중급A"),_T("초급A"),_T("lifeCycleA"),_T("MUA"),_T("SIGMAA"),_T("고정수익"),
             _T("고급0"),_T("중급0"),_T("초급0"),_T("lifeCycle0"),_T("MU0"),_T("SIGMA0"),_T("고정수익"),
             _T("고급1"),_T("중급1"),_T("초급1"),_T("lifeCycle1"),_T("MU1"),_T("SIGMA1"),_T("고정수익"),

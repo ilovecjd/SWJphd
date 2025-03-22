@@ -411,7 +411,7 @@ void CSWJphdDlg::PrintAllProject(CCreator* pCreator)
         xlAuto.SetCellValue(0, i + 2, j, pProject->duration);			j++;
         xlAuto.SetCellValue(0, i + 2, j, pProject->startTime);			j++;
         xlAuto.SetCellValue(0, i + 2, j, pProject->endTime);			j++;
-        xlAuto.SetCellValue(0, i + 2, j, pProject->revenue);			j++;
+        //xlAuto.SetCellValue(0, i + 2, j, pProject->revenue);			j++;
         xlAuto.SetCellValue(0, i + 2, j, pProject->firstPay);			j++;
         xlAuto.SetCellValue(0, i + 2, j, pProject->secondPay);			j++;
         xlAuto.SetCellValue(0, i + 2, j, pProject->finalPay);			j++;
@@ -477,7 +477,7 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 		}
 		m_pCreator = new CCreator;
 		m_pCreator->Init(&m_gEnv);
-		m_pCreator->SetInterActMode(m_gEnv.selectedMode);
+		m_pCreator->SetActMode(m_gEnv.selectedMode);
 
 		if (NULL != m_pCompany)
 		{
@@ -486,6 +486,8 @@ void CSWJphdDlg::OnBnClickedBtnStepByStep()
 		}
 		m_pCompany = new CCompany(&m_gEnv, m_pCreator);
 		m_pCompany->Init();		
+
+		m_pSaveXl->ClearSheetContents(WS_NUM_RESULT);
 
 		//m_pSaveXl->OpenExcelFile(m_strSaveFilePath,_T("project"),TRUE);
 		m_pSaveXl->ClearSheetContents(WS_NUM_PROJECT);
@@ -677,7 +679,7 @@ void CSWJphdDlg::OnBnClickedBtnGo()
 
 		for (int j=0 ;j <3; j++) // 모드별로 진행
 		{	
-			m_pCompany->m_pCreator->SetInterActMode(j);// 변경된 모드로 Project 변경
+			m_pCompany->m_pCreator->SetActMode(j);// 변경된 모드로 Project 변경
 			m_pCompany->Init(); // 변경된 모드로 Company 초기화
 
 			_RESULT_ simResult;
@@ -732,7 +734,7 @@ BOOL CSWJphdDlg::InitCompanyAndCreator()
     }
     m_pCreator = new CCreator;
     m_pCreator->Init(&m_gEnv);
-    m_pCreator->SetInterActMode(m_gEnv.selectedMode);
+    m_pCreator->SetActMode(m_gEnv.selectedMode);
 
     if (NULL != m_pCompany)
     {

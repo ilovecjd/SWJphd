@@ -21,7 +21,7 @@ public :
 
 	BOOL Init(GLOBAL_ENV* pGlobalEnv);
 	int MakeModeAndRevenue(PROJECT* pProject, int duration, int intOrExt );
-	void SetInterActMode(int iRule);
+	void SetActMode(int iRule);
 		
 private:
 	int CreateAllProjects();
